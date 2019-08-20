@@ -79,15 +79,32 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitClass: aClass [
 	| file |
-	tabs := tabs + 1.
 	file := self rootFolder / (aClass name , '.java').
 	file deleteIfAbsent: [  ].
 	currentStream := file writeStream.
+	aClass container isNamespace
+		ifTrue: [ self << 'package '.
+			aClass container fullNamePrintOn: currentStream.
+			self
+				<<< ';';
+				crlf;
+				crlf.
+			(((aClass queryAllOutgoing collect: #to) asOrderedCollection
+				flattened flatCollect: [ :element | element atScope: FamixTClass ])
+				reject: [ :class | class = aClass ]) asSet
+				do: [ :class | 
+					self << 'import '.
+					class fullNamePrintOn: currentStream.
+					self
+						<<< ';';
+						crlf ].
+			self crlf ].
 	currentStream
 		<< 'public class ';
 		<< aClass name;
 		<< ' {';
 		<< String crlf.
+	tabs := tabs + 1.
 	aClass attributes
 		do: [ :attribute | 
 			self clone visit: attribute.
@@ -113,6 +130,8 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitMethod: aMethod [
+	aMethod isStub
+		ifTrue: [ ^ self ].
 	aMethod modifiers
 		do: [ :modifier | 
 			self
@@ -123,7 +142,18 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 			currentStream
 				<< aMethod declaredType name;
 				<< String space ].
-	(aMethod name = '<Initializer>' or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ]) ifFalse: [ currentStream << aMethod signature ] ifTrue: [ self << 'static' ].
+	(aMethod name = '<Initializer>'
+		or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ])
+		ifFalse: [ self
+				<<< aMethod name;
+				<<< '('.
+			1 to: aMethod parameters size - 1 do: [ :index | 
+				self clone visit: (aMethod parameters at: index).
+				self <<< ',' ].
+			aMethod parameters
+				ifNotEmpty: [ self clone visit: aMethod parameters last ].
+			self <<< ')' ]
+		ifTrue: [ self << 'static' ].
 	currentStream
 		<< ' {';
 		<< String crlf.
@@ -139,4 +169,12 @@ FAMIX2JavaVisitor >> visitNamespace: aNamespace [
 	self rootFolder: (self rootFolder / aNamespace name).
 	self rootFolder ensureCreateDirectory.
 	aNamespace children do: [ :child | self clone visit: child ] 
+]
+
+{ #category : #generated }
+FAMIX2JavaVisitor >> visitParameter: aParameter [
+	self
+		<<< aParameter declaredType name;
+		space;
+		<<< aParameter name
 ]
