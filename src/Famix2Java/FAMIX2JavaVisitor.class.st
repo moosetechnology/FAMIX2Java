@@ -38,7 +38,12 @@ FAMIX2JavaVisitor >> crlf [
 
 { #category : #'public-exporting' }
 FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
-	aFAMIXCompatibilityModel allModelNamespaces do: [ :namespace | self clone visit: namespace ]
+	[ aFAMIXCompatibilityModel allModelNamespaces
+		do: [ :namespace | self clone visit: namespace ] ]
+		ensure: [ currentStream
+				ifNotNil: [ currentStream
+						flush;
+						close ] ]
 ]
 
 { #category : #accessing }
@@ -99,8 +104,11 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 						<<< ';';
 						crlf ].
 			self crlf ].
+	currentStream << 'public '.
+	aClass isInterface
+		ifTrue: [ currentStream << 'interface ' ]
+		ifFalse: [ currentStream << 'class ' ].
 	currentStream
-		<< 'public class ';
 		<< aClass name;
 		<< ' {';
 		<< String crlf.
@@ -154,21 +162,29 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				ifNotEmpty: [ self clone visit: aMethod parameters last ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
-	currentStream
-		<< ' {';
-		<< String crlf.
-	self
-		<< aMethod bodySourceText;
-		crlf;
-		<< '}'
+	((aMethod atScope: FamixTClass) anyOne isInterface or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
+		ifTrue: [ self <<< ';' ]
+		ifFalse: [ currentStream
+				<< ' {';
+				<< String crlf.
+			self
+				<< aMethod bodySourceText;
+				crlf;
+				<< '}' ]
 ]
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitNamespace: aNamespace [
 	"create the folder for this namespace"
-	self rootFolder: (self rootFolder / aNamespace name).
-	self rootFolder ensureCreateDirectory.
-	aNamespace children do: [ :child | self clone visit: child ] 
+
+	aNamespace name = '<Default Package>'
+		ifFalse: [ aNamespace allParents reverse
+				do: [ :namespace | 
+					self rootFolder: self rootFolder / namespace name.
+					self rootFolder ensureCreateDirectory ].
+			self rootFolder: self rootFolder / aNamespace name.
+			self rootFolder ensureCreateDirectory ].
+	aNamespace children do: [ :child | self clone visit: child ]
 ]
 
 { #category : #generated }
