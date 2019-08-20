@@ -5,6 +5,11 @@ Class {
 }
 
 { #category : #generated }
+FAMIXVisitor >> visit: anEntity [
+	^ anEntity accept: self
+]
+
+{ #category : #generated }
 FAMIXVisitor >> visitAbstractFile: aAbstractFile [
 	<generated>
 	^ self visitNamedEntity: aAbstractFile
