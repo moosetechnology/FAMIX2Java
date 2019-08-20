@@ -94,9 +94,16 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 				<<< ';';
 				crlf;
 				crlf.
-			(((aClass queryAllOutgoing collect: #to) asOrderedCollection
-				flattened flatCollect: [ :element | element atScope: FamixTClass ])
-				reject: [ :class | class = aClass ]) asSet
+			(((((aClass queryAllOutgoing collect: #to) flattened asOrderedCollection
+				,
+					((aClass allToScope: FamixTParameter) asOrderedCollection , aClass methods
+						collect: #declaredType) flattened) asSet reject: #isNil)
+				flatCollect: [ :element | 
+					element
+						atAnyScope:
+							{FamixTClass.
+							FamixTParameterizedType} ]) reject: [ :class | class = aClass ])
+				asSet
 				do: [ :class | 
 					self << 'import '.
 					class fullNamePrintOn: currentStream.
