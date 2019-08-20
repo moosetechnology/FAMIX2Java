@@ -53,6 +53,22 @@ FAMIX2JavaVisitor >> initialize [
 ]
 
 { #category : #accessing }
+FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
+	aDeclaredType isParameterizedType
+		ifFalse: [ currentStream << aDeclaredType name.
+			^ self].
+	currentStream
+		<< aDeclaredType name;
+		<< '<'.
+	1 to: aDeclaredType arguments size - 1 do: [ :type | 
+		self printDeclaredType: type.
+		currentStream << ',' ].
+	aDeclaredType arguments
+		ifNotEmpty: [ :arguments | self printDeclaredType: arguments last ].
+	currentStream << '>'
+]
+
+{ #category : #accessing }
 FAMIX2JavaVisitor >> rootFolder [
 	^ rootFolder
 ]
@@ -72,13 +88,41 @@ FAMIX2JavaVisitor >> visit: anEntity [
 	super visit: anEntity
 ]
 
+{ #category : #generated }
+FAMIX2JavaVisitor >> visitAnnotationInstance: aAnnotationInstance [
+	self
+		<< '@';
+		<<< aAnnotationInstance annotationType name.
+	aAnnotationInstance attributes
+		ifNotEmpty: [ :attributes | 
+			self <<< '('.
+			1 to: attributes size - 1 do: [ :index | 
+				self clone visit: (attributes at: index).
+				self <<< ',' ].
+			self clone visit: attributes last.
+			self <<< ')' ]
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> visitAnnotationInstanceAttribute: aAnnotationInstanceAttribute [
+	self <<< aAnnotationInstanceAttribute name;
+	<<< ' = ';
+	<<< aAnnotationInstanceAttribute value
+]
+
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitAttribute: aAttribute [
-	aAttribute declaredType ifNil: [ self << 'Object' ] ifNotNil: [ :declaredType | self << declaredType name ]. 
+	aAttribute annotationInstances
+		do: [ :annotationInstance | 
+			self clone visit: annotationInstance.
+			self crlf ].
+	aAttribute declaredType
+		ifNil: [ self << 'Object' ]
+		ifNotNil: [ :declaredType | self << declaredType name ].
 	self
 		space;
 		<<< aAttribute name;
-		<<< ';' 
+		<<< ';'
 ]
 
 { #category : #accessing }
@@ -94,10 +138,12 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 				<<< ';';
 				crlf;
 				crlf.
-			(((((aClass queryAllOutgoing collect: #to) flattened asOrderedCollection
+			(((((aClass queryAllOutgoing collect: #to) flattened
+				asOrderedCollection
 				,
-					((aClass allToScope: FamixTParameter) asOrderedCollection , aClass methods
-						collect: #declaredType) flattened) asSet reject: #isNil)
+					((aClass allToScope: FamixTParameter) asOrderedCollection
+						, aClass methods collect: #declaredType) flattened) asSet
+				reject: #isNil)
 				flatCollect: [ :element | 
 					element
 						atAnyScope:
@@ -111,6 +157,7 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 						<<< ';';
 						crlf ].
 			self crlf ].
+		aClass annotationInstances do: [ :annotationInstance | self clone visit: annotationInstance. self crlf ].
 	currentStream << 'public '.
 	aClass isInterface
 		ifTrue: [ currentStream << 'interface ' ]
@@ -147,6 +194,10 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 FAMIX2JavaVisitor >> visitMethod: aMethod [
 	aMethod isStub
 		ifTrue: [ ^ self ].
+	aMethod annotationInstances
+		do: [ :annotationInstance | 
+			self clone visit: annotationInstance.
+			self crlf ].
 	aMethod modifiers
 		do: [ :modifier | 
 			self
@@ -154,9 +205,8 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				space ].
 	aMethod declaredType
 		ifNotNil: [ :declaredType | 
-			currentStream
-				<< aMethod declaredType name;
-				<< String space ].
+			self printDeclaredType: declaredType.
+			currentStream << String space ].
 	(aMethod name = '<Initializer>'
 		or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ])
 		ifFalse: [ self
@@ -169,7 +219,8 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				ifNotEmpty: [ self clone visit: aMethod parameters last ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
-	((aMethod atScope: FamixTClass) anyOne isInterface or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
+	((aMethod atScope: FamixTClass) anyOne isInterface
+		or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
 		ifFalse: [ currentStream
 				<< ' {';
