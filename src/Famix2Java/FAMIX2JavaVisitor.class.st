@@ -60,12 +60,38 @@ FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
 	currentStream
 		<< aDeclaredType name;
 		<< '<'.
-	1 to: aDeclaredType arguments size - 1 do: [ :type | 
-		self printDeclaredType: type.
+	1 to: aDeclaredType arguments size - 1 do: [ :index | 
+		self printDeclaredType: (aDeclaredType arguments at: index).
 		currentStream << ',' ].
 	aDeclaredType arguments
 		ifNotEmpty: [ :arguments | self printDeclaredType: arguments last ].
 	currentStream << '>'
+]
+
+{ #category : #printing }
+FAMIX2JavaVisitor >> printImports: aClass [
+	| declaredTypes |
+	aClass name = 'AccountActionBean'
+		ifTrue: [ 1 halt ].
+	declaredTypes:= (((((aClass queryAllOutgoing collect: #to) flattened
+		asOrderedCollection
+		,
+			((aClass allToScope: FamixTParameter) asOrderedCollection
+				, aClass methods collect: #declaredType) flattened) asSet
+		reject: #isNil)
+		flatCollect: [ :element | 
+			element
+				atAnyScope:
+					{FamixTClass.
+					FamixTParameterizedType} ]) reject: [ :class | class = aClass ])
+		asSet.
+		
+		declaredTypes do: [ :class | 
+			self << 'import '.
+			class fullNamePrintOn: currentStream.
+			self
+				<<< ';';
+				crlf ]
 ]
 
 { #category : #accessing }
@@ -112,17 +138,46 @@ FAMIX2JavaVisitor >> visitAnnotationInstanceAttribute: aAnnotationInstanceAttrib
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitAttribute: aAttribute [
+	"Visit an attribute to print its annotations and its field."
+
+	| body |
+	" Printing the annotations for the attribute"
 	aAttribute annotationInstances
 		do: [ :annotationInstance | 
 			self clone visit: annotationInstance.
 			self crlf ].
-	aAttribute declaredType
-		ifNil: [ self << 'Object' ]
-		ifNotNil: [ :declaredType | self << declaredType name ].
+
+	"Printing modifiers"
+	aAttribute modifiers
+		ifNotEmpty: [ self
+				<< aAttribute modifiers first;
+				space ].
+	2 to: aAttribute modifiers size - 1 do: [ :index | 
+		self
+			space;
+			<<< (aAttribute modifiers at: index) ].
+	aAttribute modifiers size > 1
+		ifTrue: [ self
+				<<< aAttribute modifiers last;
+				space ].
+
+	"Declared Type"
+	self printDeclaredType: aAttribute declaredType.
+	"Attribute name"
 	self
 		space;
 		<<< aAttribute name;
-		<<< ';'
+		space.
+	(aAttribute sourceAnchor sourceText includesSubstring: '=')
+		ifTrue: [ body := aAttribute sourceAnchor sourceText
+				copyFrom: (aAttribute sourceAnchor sourceText findString: '=')
+				to:
+					(aAttribute sourceAnchor sourceText
+						findLastOccurrenceOfString: ';'
+						startingAt: 0) ].
+	body isNotNil
+		ifTrue: [ self <<< body ]
+		ifFalse: [ self <<< ';' ]
 ]
 
 { #category : #accessing }
@@ -131,6 +186,7 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	file := self rootFolder / (aClass name , '.java').
 	file deleteIfAbsent: [  ].
 	currentStream := file writeStream.
+	"Printing class package and imports if the class is not an inner class"
 	aClass container isNamespace
 		ifTrue: [ self << 'package '.
 			aClass container fullNamePrintOn: currentStream.
@@ -138,26 +194,14 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 				<<< ';';
 				crlf;
 				crlf.
-			(((((aClass queryAllOutgoing collect: #to) flattened
-				asOrderedCollection
-				,
-					((aClass allToScope: FamixTParameter) asOrderedCollection
-						, aClass methods collect: #declaredType) flattened) asSet
-				reject: #isNil)
-				flatCollect: [ :element | 
-					element
-						atAnyScope:
-							{FamixTClass.
-							FamixTParameterizedType} ]) reject: [ :class | class = aClass ])
-				asSet
-				do: [ :class | 
-					self << 'import '.
-					class fullNamePrintOn: currentStream.
-					self
-						<<< ';';
-						crlf ].
+			self printImports: aClass.
 			self crlf ].
-		aClass annotationInstances do: [ :annotationInstance | self clone visit: annotationInstance. self crlf ].
+	"Printing class annotations"
+	aClass annotationInstances
+		do: [ :annotationInstance | 
+			self clone visit: annotationInstance.
+			self crlf ].
+	"Printing Class declaration"
 	currentStream << 'public '.
 	aClass isInterface
 		ifTrue: [ currentStream << 'interface ' ]
@@ -166,20 +210,24 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 		<< aClass name;
 		<< ' {';
 		<< String crlf.
+	"Printing Attributs"
 	tabs := tabs + 1.
 	aClass attributes
 		do: [ :attribute | 
 			self clone visit: attribute.
 			currentStream << String crlf ].
 	self crlf.
+	"Printing Methods"
 	aClass methods
 		do: [ :method | 
 			self crlf.
 			self clone visit: method.
 			self crlf ].
+	"Closing Class"
 	currentStream
 		<< String crlf;
 		<< '}'.
+	"Closing Stream"
 	currentStream
 		flush;
 		close
@@ -194,19 +242,23 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 FAMIX2JavaVisitor >> visitMethod: aMethod [
 	aMethod isStub
 		ifTrue: [ ^ self ].
+	"Printing method annotations"
 	aMethod annotationInstances
 		do: [ :annotationInstance | 
 			self clone visit: annotationInstance.
 			self crlf ].
+	"Printing modifiers of method ex: static,public/private/protected"
 	aMethod modifiers
 		do: [ :modifier | 
 			self
 				<< modifier;
 				space ].
+	"Printing return type for method"
 	aMethod declaredType
 		ifNotNil: [ :declaredType | 
 			self printDeclaredType: declaredType.
 			currentStream << String space ].
+	"Printing name + parameters of method"
 	(aMethod name = '<Initializer>'
 		or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ])
 		ifFalse: [ self
@@ -219,6 +271,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				ifNotEmpty: [ self clone visit: aMethod parameters last ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
+	"Printing body of method if class is not abstract or an interface"
 	((aMethod atScope: FamixTClass) anyOne isInterface
 		or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
