@@ -71,9 +71,7 @@ FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
 { #category : #printing }
 FAMIX2JavaVisitor >> printImports: aClass [
 	| declaredTypes |
-	aClass name = 'AccountActionBean'
-		ifTrue: [ 1 halt ].
-	declaredTypes:= (((((aClass queryAllOutgoing collect: #to) flattened
+	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened
 		asOrderedCollection
 		,
 			((aClass allToScope: FamixTParameter) asOrderedCollection
@@ -85,13 +83,20 @@ FAMIX2JavaVisitor >> printImports: aClass [
 					{FamixTClass.
 					FamixTParameterizedType} ]) reject: [ :class | class = aClass ])
 		asSet.
-		
-		declaredTypes do: [ :class | 
+	(declaredTypes
+		select: [ :dType | dType class = FAMIXParameterizedType ])
+		do: [ :parameterizedType | 
+			declaredTypes addAll: parameterizedType arguments.
+			declaredTypes add: parameterizedType parameterizableClass ].
+	declaredTypes := declaredTypes
+		reject: [ :dType | dType class = FAMIXParameterizedType ].
+	declaredTypes
+		do: [ :class | 
 			self << 'import '.
 			class fullNamePrintOn: currentStream.
 			self
 				<<< ';';
-				crlf ]
+				crlf ].
 ]
 
 { #category : #accessing }
