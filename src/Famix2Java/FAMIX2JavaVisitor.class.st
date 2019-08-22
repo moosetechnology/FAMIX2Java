@@ -69,8 +69,41 @@ FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
 ]
 
 { #category : #printing }
+FAMIX2JavaVisitor >> printExtends: aClass [
+	"Print the extension of the class"
+
+	aClass superclass isNil
+		ifFalse: [ "ignore Object"
+			self
+				<<< ' extends ';
+				<<< aClass superclass name ]
+]
+
+{ #category : #printing }
+FAMIX2JavaVisitor >> printImplements: aClass [
+	"Prints the implementation of interfaces in a class."
+
+	| interfaces |
+	"aClass name = 'AbstractActionBean'
+		ifTrue: [ 1 halt ]."
+	interfaces := OrderedCollection new.
+	interfaces
+		addAll:
+			(aClass superInheritances
+				select: [ :inheritances | inheritances to isInterface ]).
+	interfaces isNotEmpty
+		ifTrue: [ self
+				<<< ' implements ';
+				<<< interfaces first to name ].
+	2 to: interfaces size do: [ :index | 
+		self
+			<<< ', ';
+			<<< (interfaces at: index) to name ]
+]
+
+{ #category : #printing }
 FAMIX2JavaVisitor >> printImports: aClass [
-	| declaredTypes |
+	| declaredTypes annotationInts annotationTypes |
 	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened
 		asOrderedCollection
 		,
@@ -91,14 +124,24 @@ FAMIX2JavaVisitor >> printImports: aClass [
 	declaredTypes := declaredTypes
 		reject: [ :dType | dType class = FAMIXParameterizedType ].
 	"fetching annotation imports"
-	aClass annotationInstances
-		do: [ :annotInst | 
+	annotationInts := OrderedCollection new.
+	annotationInts addAll: aClass annotationInstances.
+	annotationInts
+		addAll: (aClass methods flatCollect: [ :method | method annotationInstances ]).
+	annotationInts
+		addAll:
+			(aClass attributes
+				flatCollect: [ :method | method annotationInstances ]).
+	annotationTypes := (annotationInts
+		collect: [ :ann | ann annotationType ]) asSet.
+	annotationTypes
+		do: [ :annotType| 
 			self << 'import '.
-			annotInst annotationType typeContainer
+			annotType typeContainer
 				fullNamePrintOn: currentStream.
 			self
 				<<< '.';
-				<<< annotInst annotationType name;
+				<<< annotType name;
 				<<< ';';
 				crlf ].
 	declaredTypes
@@ -222,8 +265,11 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	aClass isInterface
 		ifTrue: [ currentStream << 'interface ' ]
 		ifFalse: [ currentStream << 'class ' ].
+	currentStream << aClass name.
+	"printing inheritance and implementation"
+	self printExtends: aClass.
+	self printImplements: aClass.
 	currentStream
-		<< aClass name;
 		<< ' {';
 		<< String crlf.
 	"Printing Attributs"
