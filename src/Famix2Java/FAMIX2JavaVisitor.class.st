@@ -90,13 +90,24 @@ FAMIX2JavaVisitor >> printImports: aClass [
 			declaredTypes add: parameterizedType parameterizableClass ].
 	declaredTypes := declaredTypes
 		reject: [ :dType | dType class = FAMIXParameterizedType ].
+	"fetching annotation imports"
+	aClass annotationInstances
+		do: [ :annotInst | 
+			self << 'import '.
+			annotInst annotationType typeContainer
+				fullNamePrintOn: currentStream.
+			self
+				<<< '.';
+				<<< annotInst annotationType name;
+				<<< ';';
+				crlf ].
 	declaredTypes
 		do: [ :class | 
 			self << 'import '.
 			class fullNamePrintOn: currentStream.
 			self
 				<<< ';';
-				crlf ].
+				crlf ]
 ]
 
 { #category : #accessing }
