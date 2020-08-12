@@ -302,8 +302,7 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitMethod: aMethod [
-	aMethod isStub
-		ifTrue: [ ^ self ].
+	aMethod isStub ifTrue: [ ^ self ].
 	"Printing method annotations"
 	aMethod annotationInstances
 		do: [ :annotationInstance | 
@@ -321,21 +320,15 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 			self printDeclaredType: declaredType.
 			currentStream << String space ].
 	"Printing name + parameters of method"
-	(aMethod name = '<Initializer>'
-		or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ])
+	(aMethod name = '<Initializer>' or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ])
 		ifFalse: [ self
 				<<< aMethod name;
 				<<< '('.
-			1 to: aMethod parameters size - 1 do: [ :index | 
-				self clone visit: (aMethod parameters at: index).
-				self <<< ',' ].
-			aMethod parameters
-				ifNotEmpty: [ self clone visit: aMethod parameters last ].
+			aMethod parameters size - 1 do: [ :index | self clone visit: (aMethod parameters at: index) ] separatedBy: [ self <<< ',' ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
 	"Printing body of method if class is not abstract or an interface"
-	((aMethod atScope: FamixTClass) anyOne isInterface
-		or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
+	((aMethod atScope: FamixTClass) anyOne isInterface or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
 		ifFalse: [ currentStream
 				<< ' {';
