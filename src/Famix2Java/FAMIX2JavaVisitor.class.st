@@ -198,24 +198,30 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 	"Visit an attribute to print its annotations and its field."
 
 	" Printing the annotations for the attribute"
+
 	aAttribute annotationInstances
 		do: [ :annotationInstance | 
 			self clone visit: annotationInstance.
 			self crlf ].
 
 	"Printing modifiers"
-	self indent.			
-	aAttribute modifiers do: [ :modifier | self <<< modifier; space ].
-	
+	self indent.
+	aAttribute modifiers
+		do: [ :modifier | 
+			self
+				<<< modifier;
+				space ].
+
 	"Declared Type"
 	self printDeclaredType: aAttribute declaredType.
 	"Attribute name"
 	self
 		space;
-		<<< aAttribute name;
-		space.
+		<<< aAttribute name.
 	(aAttribute sourceAnchor sourceText includesSubstring: '=')
-		ifTrue: [ self <<< (aAttribute sourceAnchor sourceText copyFrom: (aAttribute sourceAnchor sourceText findString: '=') to: aAttribute sourceAnchor sourceText size) ].
+		ifTrue: [ self
+				space;
+				<<< (aAttribute sourceAnchor sourceText copyFrom: (aAttribute sourceAnchor sourceText findString: '=') to: aAttribute sourceAnchor sourceText size) ].
 	self <<< ';'
 ]
 
