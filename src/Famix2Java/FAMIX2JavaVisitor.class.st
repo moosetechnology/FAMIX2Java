@@ -38,12 +38,8 @@ FAMIX2JavaVisitor >> crlf [
 
 { #category : #'public-exporting' }
 FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
-	[ aFAMIXCompatibilityModel allModelNamespaces
-		do: [ :namespace | self clone visit: namespace ] ]
-		ensure: [ currentStream
-				ifNotNil: [ currentStream
-						flush;
-						close ] ]
+	aFAMIXCompatibilityModel allModelNamespaces
+		do: [ :namespace | self clone visit: namespace ]
 ]
 
 { #category : #accessing }
@@ -87,14 +83,11 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 	"aClass name = 'AbstractActionBean'
 		ifTrue: [ 1 halt ]."
 	interfaces := OrderedCollection new.
-	interfaces
-		addAll:
-			(aClass superInheritances
-				select: [ :inheritances | inheritances to isInterface ]).
+	interfaces addAll: (aClass superInheritances select: [ :inheritances | inheritances target isInterface ]).
 	interfaces isNotEmpty
 		ifTrue: [ self
 				<<< ' implements ';
-				<<< interfaces first to name ].
+				<<< interfaces first target name ].
 	2 to: interfaces size do: [ :index | 
 		self
 			<<< ', ';
@@ -244,55 +237,53 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	| file |
 	file := self rootFolder / (aClass name , '.java').
 	file deleteIfAbsent: [  ].
-	currentStream := file writeStream.
-	"Printing class package and imports if the class is not an inner class"
-	aClass container isNamespace
-		ifTrue: [ self << 'package '.
-			aClass container fullNamePrintOn: currentStream.
-			self
-				<<< ';';
-				crlf;
-				crlf.
-			self printImports: aClass.
-			self crlf ].
-	"Printing class annotations"
-	aClass annotationInstances
-		do: [ :annotationInstance | 
-			self clone visit: annotationInstance.
-			self crlf ].
-	"Printing Class declaration"
-	currentStream << 'public '.
-	aClass isInterface
-		ifTrue: [ currentStream << 'interface ' ]
-		ifFalse: [ currentStream << 'class ' ].
-	currentStream << aClass name.
-	"printing inheritance and implementation"
-	self printExtends: aClass.
-	self printImplements: aClass.
-	currentStream
-		<< ' {';
-		<< String crlf.
-	"Printing Attributs"
-	tabs := tabs + 1.
-	aClass attributes
-		do: [ :attribute | 
-			self clone visit: attribute.
-			currentStream << String crlf ].
-	self crlf.
-	"Printing Methods"
-	aClass methods
-		do: [ :method | 
+	file
+		writeStreamDo: [ :stream | 
+			currentStream := stream.
+			"Printing class package and imports if the class is not an inner class"
+			aClass container isNamespace
+				ifTrue: [ self << 'package '.
+					aClass container fullNamePrintOn: currentStream.
+					self
+						<<< ';';
+						crlf;
+						crlf.
+					self printImports: aClass.
+					self crlf ].
+			"Printing class annotations"
+			aClass annotationInstances
+				do: [ :annotationInstance | 
+					self clone visit: annotationInstance.
+					self crlf ].
+			"Printing Class declaration"
+			currentStream << 'public '.
+			aClass isInterface
+				ifTrue: [ currentStream << 'interface ' ]
+				ifFalse: [ currentStream << 'class ' ].
+			currentStream << aClass name.
+			"printing inheritance and implementation"
+			self printExtends: aClass.
+			self printImplements: aClass.
+			currentStream
+				<< ' {';
+				<< String crlf.
+			"Printing Attributs"
+			tabs := tabs + 1.
+			aClass attributes
+				do: [ :attribute | 
+					self clone visit: attribute.
+					currentStream << String crlf ].
 			self crlf.
-			self clone visit: method.
-			self crlf ].
-	"Closing Class"
-	currentStream
-		<< String crlf;
-		<< '}'.
-	"Closing Stream"
-	currentStream
-		flush;
-		close
+			"Printing Methods"
+			aClass methods
+				do: [ :method | 
+					self crlf.
+					self clone visit: method.
+					self crlf ].
+			"Closing Class"
+			currentStream
+				<< String crlf;
+				<< '}' ]
 ]
 
 { #category : #generated }
@@ -324,7 +315,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 		ifFalse: [ self
 				<<< aMethod name;
 				<<< '('.
-			aMethod parameters size - 1 do: [ :index | self clone visit: (aMethod parameters at: index) ] separatedBy: [ self <<< ',' ].
+			aMethod parameters do: [ :parameter | self clone visit: parameter ] separatedBy: [ self <<< ',' ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
 	"Printing body of method if class is not abstract or an interface"
