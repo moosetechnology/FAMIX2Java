@@ -322,6 +322,12 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				separatedBy: [ self <<< ', ' ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
+	"print exception"
+	((aMethod withMethodsOverriding collect: [ :m | m thrownExceptions collect: #exceptionClass ]) flattened asSet asOrderedCollection sorted: #name ascending)
+		ifNotEmpty: [ :exceptions | 
+			self <<< ' throws '.
+			exceptions do: [ :exception | self <<< exception name ] separatedBy: [ self <<< ', ' ] ].
+
 	"Printing body of method if class is not abstract or an interface"
 	((aMethod atScope: FamixTClass) anyOne isInterface or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
