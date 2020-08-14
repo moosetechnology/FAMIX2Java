@@ -346,8 +346,23 @@ FAMIX2JavaVisitor >> visitNamespace: aNamespace [
 
 { #category : #generated }
 FAMIX2JavaVisitor >> visitParameter: aParameter [
+	aParameter declaredType isParameterizedType
+		ifTrue: [ self visitParameterizableType: aParameter declaredType ]
+		ifFalse: [ self <<< aParameter declaredType name ].
 	self
-		<<< aParameter declaredType name;
 		space;
 		<<< aParameter name
+]
+
+{ #category : #generated }
+FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
+	self <<< aParameterizableType name.
+	self <<< '<'.
+	aParameterizableType arguments
+		do: [ :argument | 
+			argument isParameterType
+				ifTrue: [ self visitParameterizableType: argument ]
+				ifFalse: [ self <<< argument name ] ]
+		separatedBy: [ self <<< ',' ].
+	self <<< '>'
 ]
