@@ -20,8 +20,7 @@ Class {
 
 { #category : #'private-exporting' }
 FAMIX2JavaVisitor >> << aString [
-	"not opti at all"
-	tabs * tabulationSize timesRepeat: [ currentStream << String space ].
+	self indent.
 	currentStream << aString
 ]
 
@@ -40,6 +39,12 @@ FAMIX2JavaVisitor >> crlf [
 FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
 	aFAMIXCompatibilityModel allModelNamespaces
 		do: [ :namespace | self clone visit: namespace ]
+]
+
+{ #category : #'private-exporting' }
+FAMIX2JavaVisitor >> indent [
+	tabs * tabulationSize timesRepeat: [ currentStream << String space ].
+	
 ]
 
 { #category : #accessing }
