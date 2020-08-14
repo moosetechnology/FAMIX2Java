@@ -197,7 +197,6 @@ FAMIX2JavaVisitor >> visitAnnotationInstanceAttribute: aAnnotationInstanceAttrib
 FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 	"Visit an attribute to print its annotations and its field."
 
-	| body |
 	" Printing the annotations for the attribute"
 	aAttribute annotationInstances
 		do: [ :annotationInstance | 
@@ -205,19 +204,9 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 			self crlf ].
 
 	"Printing modifiers"
-	aAttribute modifiers
-		ifNotEmpty: [ self
-				<< aAttribute modifiers first;
-				space ].
-	2 to: aAttribute modifiers size - 1 do: [ :index | 
-		self
-			space;
-			<<< (aAttribute modifiers at: index) ].
-	aAttribute modifiers size > 1
-		ifTrue: [ self
-				<<< aAttribute modifiers last;
-				space ].
-
+	self indent.			
+	aAttribute modifiers do: [ :modifier | self <<< modifier; space ].
+	
 	"Declared Type"
 	self printDeclaredType: aAttribute declaredType.
 	"Attribute name"
@@ -226,15 +215,8 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 		<<< aAttribute name;
 		space.
 	(aAttribute sourceAnchor sourceText includesSubstring: '=')
-		ifTrue: [ body := aAttribute sourceAnchor sourceText
-				copyFrom: (aAttribute sourceAnchor sourceText findString: '=')
-				to:
-					(aAttribute sourceAnchor sourceText
-						findLastOccurrenceOfString: ';'
-						startingAt: 0) ].
-	body isNotNil
-		ifTrue: [ self <<< body ]
-		ifFalse: [ self <<< ';' ]
+		ifTrue: [ self <<< (aAttribute sourceAnchor sourceText copyFrom: (aAttribute sourceAnchor sourceText findString: '=') to: aAttribute sourceAnchor sourceText size) ].
+	self <<< ';'
 ]
 
 { #category : #accessing }
@@ -320,7 +302,9 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 		ifFalse: [ self
 				<<< aMethod name;
 				<<< '('.
-			aMethod parameters do: [ :parameter | self clone visit: parameter ] separatedBy: [ self <<< ',' ].
+			(aMethod parameters sorted: [ :p :p2 | p sourceAnchor startPos < p2 sourceAnchor startPos ])
+				do: [ :parameter | self clone visit: parameter ]
+				separatedBy: [ self <<< ', ' ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
 	"Printing body of method if class is not abstract or an interface"
