@@ -106,7 +106,7 @@ FAMIX2JavaVisitor >> printImports: aClass [
 		asOrderedCollection
 		,
 			((aClass allToScope: FamixTParameter) asOrderedCollection
-				, aClass methods collect: #declaredType) flattened) asSet
+				, (aClass methods collect: #declaredType), (aClass methods collect: [:m | m caughtExceptions collect: #exceptionClass])) flattened) asSet
 		reject: #isNil)
 		flatCollect: [ :element | 
 			element
