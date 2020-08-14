@@ -127,7 +127,7 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 
 { #category : #printing }
 FAMIX2JavaVisitor >> printImports: aClass [
-	| declaredTypes annotationInts annotationTypes |
+	| declaredTypes annotationTypes |
 	declaredTypes := self extractDeclaredTypesFor: aClass.
 	self printImportsDeclaredTypes: declaredTypes. 
 	"fetching annotation imports"
