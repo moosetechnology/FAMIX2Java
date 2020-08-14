@@ -41,6 +41,32 @@ FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
 		do: [ :namespace | self clone visit: namespace ]
 ]
 
+{ #category : #printing }
+FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
+	| annotationInts |
+	annotationInts := OrderedCollection new.
+	annotationInts addAll: aClass annotationInstances.
+	annotationInts addAll: (aClass methods flatCollect: [ :method | method annotationInstances ]).
+	annotationInts addAll: (aClass attributes flatCollect: [ :method | method annotationInstances ]).
+	^ annotationInts collect: [ :ann | ann annotationType ] as: Set
+]
+
+{ #category : #printing }
+FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
+	| declaredTypes |
+	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened asOrderedCollection
+		,
+			((aClass allToScope: FamixTParameter) asOrderedCollection , (aClass methods collect: #declaredType)
+				, (aClass methods collect: [ :m | m caughtExceptions collect: #exceptionClass ])) flattened) asSet reject: #isNil)
+		flatCollect: [ :element | element atAnyScope: {FamixTClass . FamixTParameterizedType} ]) reject: [ :class | class = aClass ]) asSet.
+	(declaredTypes select: [ :dType | dType class = FAMIXParameterizedType ])
+		do: [ :parameterizedType | 
+			declaredTypes addAll: parameterizedType arguments.
+			declaredTypes add: parameterizedType parameterizableClass ].
+	declaredTypes := declaredTypes reject: [ :dType | dType class = FAMIXParameterizedType ].
+	^ declaredTypes
+]
+
 { #category : #'private-exporting' }
 FAMIX2JavaVisitor >> indent [
 	tabs * tabulationSize timesRepeat: [ currentStream << String space ].
@@ -102,46 +128,29 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 { #category : #printing }
 FAMIX2JavaVisitor >> printImports: aClass [
 	| declaredTypes annotationInts annotationTypes |
-	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened
-		asOrderedCollection
-		,
-			((aClass allToScope: FamixTParameter) asOrderedCollection
-				, (aClass methods collect: #declaredType), (aClass methods collect: [:m | m caughtExceptions collect: #exceptionClass])) flattened) asSet
-		reject: #isNil)
-		flatCollect: [ :element | 
-			element
-				atAnyScope:
-					{FamixTClass.
-					FamixTParameterizedType} ]) reject: [ :class | class = aClass ])
-		asSet.
-	(declaredTypes
-		select: [ :dType | dType class = FAMIXParameterizedType ])
-		do: [ :parameterizedType | 
-			declaredTypes addAll: parameterizedType arguments.
-			declaredTypes add: parameterizedType parameterizableClass ].
-	declaredTypes := declaredTypes
-		reject: [ :dType | dType class = FAMIXParameterizedType ].
+	declaredTypes := self extractDeclaredTypesFor: aClass.
+	self printImportsDeclaredTypes: declaredTypes. 
 	"fetching annotation imports"
-	annotationInts := OrderedCollection new.
-	annotationInts addAll: aClass annotationInstances.
-	annotationInts
-		addAll: (aClass methods flatCollect: [ :method | method annotationInstances ]).
-	annotationInts
-		addAll:
-			(aClass attributes
-				flatCollect: [ :method | method annotationInstances ]).
-	annotationTypes := (annotationInts
-		collect: [ :ann | ann annotationType ]) asSet.
+	annotationTypes := self extractAnnotationTypesFor: aClass.
+	self printImportsAnnotationTypes: annotationTypes.
+	
+]
+
+{ #category : #printing }
+FAMIX2JavaVisitor >> printImportsAnnotationTypes: annotationTypes [
 	(annotationTypes sorted: #fullName ascending)
-		do: [ :annotType| 
+		do: [ :annotType | 
 			self << 'import '.
-			annotType typeContainer
-				fullNamePrintOn: currentStream.
+			annotType typeContainer fullNamePrintOn: currentStream.
 			self
 				<<< '.';
 				<<< annotType name;
 				<<< ';';
-				crlf ].
+				crlf ]
+]
+
+{ #category : #printing }
+FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
 	(declaredTypes sorted: #fullName ascending)
 		do: [ :class | 
 			self << 'import '.
