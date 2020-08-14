@@ -132,7 +132,7 @@ FAMIX2JavaVisitor >> printImports: aClass [
 				flatCollect: [ :method | method annotationInstances ]).
 	annotationTypes := (annotationInts
 		collect: [ :ann | ann annotationType ]) asSet.
-	annotationTypes
+	(annotationTypes sorted: #fullName ascending)
 		do: [ :annotType| 
 			self << 'import '.
 			annotType typeContainer
@@ -142,7 +142,7 @@ FAMIX2JavaVisitor >> printImports: aClass [
 				<<< annotType name;
 				<<< ';';
 				crlf ].
-	declaredTypes
+	(declaredTypes sorted: #fullName ascending)
 		do: [ :class | 
 			self << 'import '.
 			class fullNamePrintOn: currentStream.
