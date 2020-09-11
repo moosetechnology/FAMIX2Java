@@ -74,6 +74,16 @@ FAMIX2JavaVisitor >> indent [
 ]
 
 { #category : #accessing }
+FAMIX2JavaVisitor >> indentMinus [
+	tabs := tabs - 1
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> indentPlus [
+	tabs := tabs + 1
+]
+
+{ #category : #accessing }
 FAMIX2JavaVisitor >> initialize [
 	tabs := 0.
 	tabulationSize := 4
@@ -369,6 +379,19 @@ FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
 	self <<< aParameterizableType name.
 	self <<< '<'.
 	aParameterizableType arguments
+		do: [ :argument | 
+			argument isParameterType
+				ifTrue: [ self visitParameterizableType: argument ]
+				ifFalse: [ self <<< argument name ] ]
+		separatedBy: [ self <<< ',' ].
+	self <<< '>'
+]
+
+{ #category : #generated }
+FAMIX2JavaVisitor >> visitParameterizedType: aParameterizedType [
+	self <<< aParameterizedType name.
+	self <<< '<'.
+	aParameterizedType arguments
 		do: [ :argument | 
 			argument isParameterType
 				ifTrue: [ self visitParameterizableType: argument ]
