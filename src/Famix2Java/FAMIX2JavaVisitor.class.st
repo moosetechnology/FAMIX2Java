@@ -232,7 +232,8 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 				space ].
 
 	"Declared Type"
-	self printDeclaredType: aAttribute declaredType.
+	aAttribute declaredType ifNotNil: [  
+	self printDeclaredType: aAttribute declaredType ] ifNil: [ self <<< '/* erreur */ Object' ].
 	"Attribute name"
 	self
 		space;
