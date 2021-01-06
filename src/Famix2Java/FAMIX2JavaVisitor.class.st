@@ -63,7 +63,7 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 		do: [ :parameterizedType | 
 			declaredTypes addAll: parameterizedType arguments.
 			declaredTypes add: parameterizedType parameterizableClass ].
-	declaredTypes := declaredTypes reject: [ :dType | dType class = FAMIXParameterizedType ].
+	declaredTypes := declaredTypes reject: [ :dType | dType class = FAMIXParameterizedType or: [ dType isAnonymousClass ] ].
 	^ declaredTypes
 ]
 
