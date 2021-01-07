@@ -9,6 +9,6 @@ FAMIXMethod >> bodySourceText [
 					(sourceText
 						findString: '{'
 						startingAt: (self sourceText findString: self name ) )+ 1
-				to: (sourceText findLastOccurrenceOfString: '}' startingAt: 0) - 1 ]
+				to: (sourceText findLastOccurrenceOfString: '}' startingAt: 1) - 1 ]
 		ifEmpty: [ '' ]
 ]
