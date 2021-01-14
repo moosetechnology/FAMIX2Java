@@ -232,28 +232,35 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	"Printing modifiers"
 	self indent.
-	(aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ]) 
+	(aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ])
 		do: [ :modifier | 
 			self
 				<<< modifier;
 				space ].
 
 	"Declared Type"
-	aAttribute declaredType ifNotNil: [  
-	self printDeclaredType: aAttribute declaredType ] ifNil: [ self <<< '/* erreur */ Object' ].
+	aAttribute declaredType
+		ifNotNil: [ self printDeclaredType: aAttribute declaredType ]
+		ifNil: [ self <<< '/* erreur */ Object' ].
 	"Attribute name"
 	self
 		space;
 		<<< aAttribute name.
-		
+
 	"This is an hack to get the affectation is any (hack because some problems with annotations that are sometimes part of the sourceAnchor...)"
 	attributeSource := aAttribute sourceAnchor sourceText.
-	attributeSourceFromName := attributeSource copyFrom: (attributeSource findString: aAttribute name) to: attributeSource size.
-	(attributeSourceFromName includesSubstring: '=')
-		ifTrue: [ self
-				space;
-				<<< (attributeSourceFromName copyFrom: (attributeSourceFromName findString: '=') to: attributeSourceFromName size) ].
-	self <<< ';'
+	attributeSource
+		ifNotEmpty: [ attributeSourceFromName := attributeSource
+				copyFrom: (attributeSource findString: aAttribute name)
+				to: attributeSource size.
+			(attributeSourceFromName includesSubstring: '=')
+				ifTrue: [ self
+						space;
+						<<<
+							(attributeSourceFromName
+								copyFrom: (attributeSourceFromName findString: '=')
+								to: attributeSourceFromName size - 1) ].
+			self <<< ';' ]
 ]
 
 { #category : #accessing }
