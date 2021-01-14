@@ -259,8 +259,8 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 						<<<
 							(attributeSourceFromName
 								copyFrom: (attributeSourceFromName findString: '=')
-								to: attributeSourceFromName size - 1) ].
-			self <<< ';' ]
+								to: attributeSourceFromName size - 1) ] ].
+	self <<< ';'
 ]
 
 { #category : #accessing }
