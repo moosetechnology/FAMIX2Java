@@ -224,6 +224,7 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	" Printing the annotations for the attribute"
 
+	| attributeSource attributeSourceFromName |
 	aAttribute annotationInstances
 		do: [ :annotationInstance | 
 			self clone visit: annotationInstance.
@@ -231,7 +232,7 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	"Printing modifiers"
 	self indent.
-	aAttribute modifiers
+	(aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ]) 
 		do: [ :modifier | 
 			self
 				<<< modifier;
@@ -244,10 +245,14 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 	self
 		space;
 		<<< aAttribute name.
-	(aAttribute sourceAnchor sourceText includesSubstring: '=')
+		
+	"This is an hack to get the affectation is any (hack because some problems with annotations that are sometimes part of the sourceAnchor...)"
+	attributeSource := aAttribute sourceAnchor sourceText.
+	attributeSourceFromName := attributeSource copyFrom: (attributeSource findString: aAttribute name) to: attributeSource size.
+	(attributeSourceFromName includesSubstring: '=')
 		ifTrue: [ self
 				space;
-				<<< (aAttribute sourceAnchor sourceText copyFrom: (aAttribute sourceAnchor sourceText findString: '=') to: aAttribute sourceAnchor sourceText size) ].
+				<<< (attributeSourceFromName copyFrom: (attributeSourceFromName findString: '=') to: attributeSourceFromName size) ].
 	self <<< ';'
 ]
 
