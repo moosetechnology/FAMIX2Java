@@ -171,6 +171,12 @@ FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
 ]
 
 { #category : #accessing }
+FAMIX2JavaVisitor >> reset [
+	tabs := 0.
+	tabulationSize := 4
+]
+
+{ #category : #accessing }
 FAMIX2JavaVisitor >> rootFolder [
 	^ rootFolder
 ]
