@@ -257,9 +257,9 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 				ifTrue: [ self
 						space;
 						<<<
-							(attributeSourceFromName
+							((attributeSourceFromName
 								copyFrom: (attributeSourceFromName findString: '=')
-								to: attributeSourceFromName size - 1) ] ].
+								to: attributeSourceFromName size) removeSuffix: ';') ] ].
 	self <<< ';'
 ]
 
