@@ -54,7 +54,7 @@ FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 { #category : #printing }
 FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 	| declaredTypes |
-	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened asOrderedCollection
+	declaredTypes := (((((aClass queryAllOutgoing collect: #target) flattened asOrderedCollection
 		,
 			((aClass allToScope: FamixTParameter) asOrderedCollection , (aClass methods collect: #declaredType)
 				, (aClass methods collect: [ :m | m caughtExceptions collect: #exceptionClass ])) flattened) asSet reject: #isNil)
@@ -324,7 +324,8 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitMethod: aMethod [
-	aMethod isStub ifTrue: [ ^ self ].
+	aMethod isStub
+		ifTrue: [ ^ self ].
 	"Printing method annotations"
 	aMethod annotationInstances
 		do: [ :annotationInstance | 
@@ -342,11 +343,13 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 			self printDeclaredType: declaredType.
 			currentStream << String space ].
 	"Printing name + parameters of method"
-	(aMethod name = '<Initializer>' or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ])
+	(aMethod name = '<Initializer>'
+		or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ])
 		ifFalse: [ self
 				<<< aMethod name;
 				<<< '('.
-			(aMethod parameters sorted: [ :p :p2 | p sourceAnchor startPos < p2 sourceAnchor startPos ])
+			(aMethod parameters
+				sorted: [ :p :p2 | p sourceAnchor startPos < p2 sourceAnchor startPos ])
 				do: [ :parameter | self clone visit: parameter ]
 				separatedBy: [ self <<< ', ' ].
 			self <<< ')' ]
@@ -358,7 +361,8 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 			exceptions do: [ :exception | self <<< exception name ] separatedBy: [ self <<< ', ' ] ].
 
 	"Printing body of method if class is not abstract or an interface"
-	((aMethod atScope: FamixTClass) anyOne isInterface or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
+	((aMethod atScope: FamixTClass) anyOne isInterface
+		or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
 		ifFalse: [ currentStream
 				<< ' {';
@@ -380,7 +384,9 @@ FAMIX2JavaVisitor >> visitNamespace: aNamespace [
 					self rootFolder ensureCreateDirectory ].
 			self rootFolder: self rootFolder / aNamespace name.
 			self rootFolder ensureCreateDirectory ].
-	aNamespace children do: [ :child | self clone visit: child ]
+	aNamespace children
+		reject: [ :child | child isNamespace or: [ child isParameterizedType ] ]
+		thenDo: [ :child | self clone visit: child ]
 ]
 
 { #category : #generated }

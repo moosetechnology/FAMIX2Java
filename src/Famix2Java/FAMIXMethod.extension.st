@@ -12,3 +12,12 @@ FAMIXMethod >> bodySourceText [
 				to: (sourceText findLastOccurrenceOfString: '}' startingAt: 1) - 1 ]
 		ifEmpty: [ '' ]
 ]
+
+{ #category : #'*Famix2Java' }
+FAMIXMethod >> withMethodsOverriding [
+	^ (self belongsTo subclassHierarchy
+		collect: [ :each | each implementationOf: self signature ]
+		thenSelect: #isNotNil)
+		add: self;
+		yourself
+]
