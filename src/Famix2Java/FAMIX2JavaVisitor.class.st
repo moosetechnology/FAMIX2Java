@@ -124,7 +124,10 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 	"aClass name = 'AbstractActionBean'
 		ifTrue: [ 1 halt ]."
 	interfaces := OrderedCollection new.
-	interfaces addAll: (aClass superInheritances select: [ :inheritances | inheritances target isInterface ]).
+	interfaces
+		addAll:
+			(aClass superInheritances
+				select: [ :inheritances | inheritances target isInterface ]).
 	interfaces isNotEmpty
 		ifTrue: [ self
 				<<< ' implements ';
@@ -132,7 +135,7 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 	2 to: interfaces size do: [ :index | 
 		self
 			<<< ', ';
-			<<< (interfaces at: index) to name ]
+			<<< (interfaces at: index) target name ]
 ]
 
 { #category : #printing }
@@ -232,11 +235,18 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	"Printing modifiers"
 	self indent.
-	(aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ])
-		do: [ :modifier | 
-			self
-				<<< modifier;
-				space ].
+	aAttribute
+		cacheAt: #modifiers
+		ifPresent: [ :modifiers |
+			modifiers isString
+				ifTrue: [ self
+						<<< modifiers;
+						space ]
+				ifFalse: [ modifiers
+						do: [ :modifier | 
+							self
+								<<< modifier;
+								space ] ] ].
 
 	"Declared Type"
 	aAttribute declaredType
@@ -249,17 +259,18 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	"This is an hack to get the affectation is any (hack because some problems with annotations that are sometimes part of the sourceAnchor...)"
 	attributeSource := aAttribute sourceAnchor sourceText.
-	attributeSource
-		ifNotEmpty: [ attributeSourceFromName := attributeSource
-				copyFrom: (attributeSource findString: aAttribute name)
-				to: attributeSource size.
-			(attributeSourceFromName includesSubstring: '=')
-				ifTrue: [ self
-						space;
-						<<<
-							((attributeSourceFromName
-								copyFrom: (attributeSourceFromName findString: '=')
-								to: attributeSourceFromName size) removeSuffix: ';') ] ].
+	(attributeSource findString: aAttribute name) = 0
+		ifFalse: [ attributeSource
+				ifNotEmpty: [ attributeSourceFromName := attributeSource
+						copyFrom: (attributeSource findString: aAttribute name)
+						to: attributeSource size.
+					(attributeSourceFromName includesSubstring: '=')
+						ifTrue: [ self
+								space;
+								<<<
+									((attributeSourceFromName
+										copyFrom: (attributeSourceFromName findString: '=')
+										to: attributeSourceFromName size) removeSuffix: ';') ] ] ].
 	self <<< ';'
 ]
 
@@ -332,11 +343,18 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 			self clone visit: annotationInstance.
 			self crlf ].
 	"Printing modifiers of method ex: static,public/private/protected"
-	aMethod modifiers
-		do: [ :modifier | 
-			self
-				<< modifier;
-				space ].
+	aMethod
+		cacheAt: #modifiers
+		ifPresent: [ :modifiers | 
+			modifiers isString
+				ifTrue: [ self
+						<< modifiers;
+						space ]
+				ifFalse: [ modifiers
+						do: [ :modifier | 
+							self
+								<< modifier;
+								space ] ] ].
 	"Printing return type for method"
 	aMethod declaredType
 		ifNotNil: [ :declaredType | 
@@ -355,14 +373,22 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
 	"print exception"
-	((aMethod withMethodsOverriding collect: [ :m | m thrownExceptions collect: #exceptionClass ]) flattened asSet asOrderedCollection sorted: #name ascending)
+	((aMethod withMethodsOverriding
+		collect: [ :m | m thrownExceptions collect: #exceptionClass ])
+		flattened asSet asOrderedCollection sorted: #name ascending)
 		ifNotEmpty: [ :exceptions | 
 			self <<< ' throws '.
-			exceptions do: [ :exception | self <<< exception name ] separatedBy: [ self <<< ', ' ] ].
+			exceptions
+				do: [ :exception | self <<< exception name ]
+				separatedBy: [ self <<< ', ' ] ].
 
 	"Printing body of method if class is not abstract or an interface"
 	((aMethod atScope: FamixTClass) anyOne isInterface
-		or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
+		or: [ (aMethod isAbstract isNotNil and: [ aMethod isAbstract ])
+				or: [ aMethod
+						cacheAt: #modifiers
+						ifAbsent: [ false ]
+						ifPresent: [ :modifiers | modifiers includes: 'abstract' ] ] ])
 		ifTrue: [ self <<< ';' ]
 		ifFalse: [ currentStream
 				<< ' {';
