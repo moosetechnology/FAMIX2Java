@@ -109,11 +109,14 @@ FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
 FAMIX2JavaVisitor >> printExtends: aClass [
 	"Print the extension of the class"
 
-	aClass superclass isNil
-		ifFalse: [ "ignore Object"
+	(aClass superInheritances
+		reject: [ :inheritance | inheritance superclass isInterface ])
+		reject: [ :inheritance | inheritance superclass name = 'Object' ]
+		thenDo: [ :inheritance | 
+			"self haltIf: [ inheritance superclass name = 'noname' ]."
 			self
 				<<< ' extends ';
-				<<< aClass superclass name ]
+				<<< inheritance superclass name ]
 ]
 
 { #category : #printing }
@@ -311,13 +314,18 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 				<< String crlf.
 			"Printing Attributs"
 			tabs := tabs + 1.
-			aClass attributes
+			(aClass attributes
+				sortAscending: [ :att | att sourceAnchor startPos ])
 				do: [ :attribute | 
 					self clone visit: attribute.
 					currentStream << String crlf ].
 			self crlf.
 			"Printing Methods"
-			aClass methods
+			(aClass methods
+				sortAscending: [ :method | 
+					method sourceAnchor
+						ifNil: [ 0 ]
+						ifNotNil: [ method sourceAnchor startPos ] ])
 				do: [ :method | 
 					self crlf.
 					self clone visit: method.
