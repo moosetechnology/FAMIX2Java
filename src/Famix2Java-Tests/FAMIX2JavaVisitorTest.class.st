@@ -16,3 +16,17 @@ FAMIX2JavaVisitorTest >> setUp [
 	super setUp.
 	visitor := FAMIX2JavaVisitor new
 ]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitAnnotationInstance [
+
+	| aInst aType aString |
+	aInst := FAMIXAnnotationInstance new. 
+	aType := FAMIXAnnotationType new.
+	aType name: 'Banana'.
+	aInst annotationType: aType.
+	
+	aString := String streamContents: [ :stream | visitor currentStream: stream. visitor visitAnnotationInstance: aInst].
+	self assert: aString equals: '@Banana'.
+
+]

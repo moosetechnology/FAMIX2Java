@@ -35,6 +35,16 @@ FAMIX2JavaVisitor >> crlf [
 	currentStream << String crlf
 ]
 
+{ #category : #accessing }
+FAMIX2JavaVisitor >> currentStream [
+	^ currentStream
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> currentStream: anObject [
+	currentStream := anObject
+]
+
 { #category : #'public-exporting' }
 FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
 	aFAMIXCompatibilityModel allModelNamespaces
