@@ -19,14 +19,29 @@ FAMIX2JavaVisitorTest >> setUp [
 
 { #category : #test }
 FAMIX2JavaVisitorTest >> testVisitAnnotationInstance [
-
 	| aInst aType aString |
-	aInst := FAMIXAnnotationInstance new. 
+	aInst := FAMIXAnnotationInstance new.
 	aType := FAMIXAnnotationType new.
 	aType name: 'Banana'.
 	aInst annotationType: aType.
-	
-	aString := String streamContents: [ :stream | visitor currentStream: stream. visitor visitAnnotationInstance: aInst].
-	self assert: aString equals: '@Banana'.
+	aString := String
+		streamContents: [ :stream | 
+			visitor currentStream: stream.
+			visitor visitAnnotationInstance: aInst ].
+	self assert: aString equals: '@Banana'
+]
 
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitAnnotationInstanceAttribute [
+	| aInstAttribute aNameString aTypeAttribute |
+	aInstAttribute := FAMIXAnnotationInstanceAttribute new.
+	aTypeAttribute := FAMIXAnnotationTypeAttribute new.
+	aTypeAttribute name: 'Banana'.
+	aInstAttribute annotationTypeAttribute: aTypeAttribute.
+	aInstAttribute value: 'Apple'.	"probably not realistic"
+	aNameString := String
+		streamContents: [ :stream | 
+			visitor currentStream: stream.
+			visitor visitAnnotationInstanceAttribute: aInstAttribute ].
+	self assert: aNameString equals: 'Banana = Apple'
 ]
