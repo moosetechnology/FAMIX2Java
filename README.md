@@ -6,6 +6,7 @@ A visitor to export FAMIX compatibility Java Model to Java code
 
 ```smalltalk
 Metacello new
-  githubUser: 'moosetechnology' project: 'FAMIX2Java' commitish: 'v1.x.x' path: 'src';
+  githubUser: 'moosetechnology' project: 'FAMIX2Java' commitish: 'v1.x.x' path: 'src'; 
+  baseline: 'Famix2Java';
   load
 ```
