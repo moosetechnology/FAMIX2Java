@@ -33,6 +33,11 @@ FAMIX2JavaVisitorTest >> testVisitAnnotationInstance [
 
 { #category : #test }
 FAMIX2JavaVisitorTest >> testVisitAnnotationInstanceAttribute [
+	"
+	@Banana(Banane = Apple)
+	myMethod(){
+	}
+	"
 	| aInstAttribute aNameString aTypeAttribute |
 	aInstAttribute := FAMIXAnnotationInstanceAttribute new.
 	aTypeAttribute := FAMIXAnnotationTypeAttribute new.
