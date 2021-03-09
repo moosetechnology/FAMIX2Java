@@ -108,15 +108,18 @@ FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
 { #category : #printing }
 FAMIX2JavaVisitor >> printExtends: aClass [
 	"Print the extension of the class"
-
+	"FIXME: parameterized classes are not fully referenced in the mse"
 	(aClass superInheritances
 		reject: [ :inheritance | inheritance superclass isInterface ])
 		reject: [ :inheritance | inheritance superclass name = 'Object' ]
 		thenDo: [ :inheritance | 
-			"self haltIf: [ inheritance superclass name = 'noname' ]."
-			self
-				<<< ' extends ';
-				<<< inheritance superclass name ]
+			inheritance superclass isParameterizedType
+				ifFalse: [ self
+						<<< ' extends ';
+						<<< inheritance superclass name ]
+				ifTrue: [ self
+						<<< ' extends ';
+						<<< inheritance superclass name ] ] 
 ]
 
 { #category : #printing }
@@ -219,9 +222,10 @@ FAMIX2JavaVisitor >> visitAnnotationInstance: aAnnotationInstance [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitAnnotationInstanceAttribute: aAnnotationInstanceAttribute [
-	self <<< aAnnotationInstanceAttribute name;
-	<<< ' = ';
-	<<< aAnnotationInstanceAttribute value
+	self
+		<<< aAnnotationInstanceAttribute name;
+		<<< ' = ';
+		<<< aAnnotationInstanceAttribute value
 ]
 
 { #category : #accessing }
