@@ -1,7 +1,7 @@
-Extension { #name : #FAMIXMethod }
+Extension { #name : #FamixTMethod }
 
 { #category : #'*Famix2Java' }
-FAMIXMethod >> bodySourceText [
+FamixTMethod >> bodySourceText [
 	^ self sourceText
 		ifNotEmpty: [ :sourceText | 
 			sourceText

@@ -1,7 +1,7 @@
-Extension { #name : #FAMIXType }
+Extension { #name : #FamixTType }
 
 { #category : #'*Famix2Java' }
-FAMIXType >> fullNamePrintOn: aStream [
+FamixTType >> fullNamePrintOn: aStream [
 	| parent |
 	parent := self container.
 	parent

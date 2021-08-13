@@ -1,7 +1,7 @@
-Extension { #name : #FAMIXNamespace }
+Extension { #name : #FamixTNamespace }
 
 { #category : #'*Famix2Java' }
-FAMIXNamespace >> fullNamePrintOn: aStream [
+FamixTNamespace >> fullNamePrintOn: aStream [
 	self belongsTo
 		ifNotNil: [ :parent | 
 			parent fullNamePrintOn: aStream.
