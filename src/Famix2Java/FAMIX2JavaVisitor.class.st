@@ -220,24 +220,23 @@ FAMIX2JavaVisitor >> visitAnnotationInstanceAttribute: aAnnotationInstanceAttrib
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitAttribute: aAttribute [
+
 	"Visit an attribute to print its annotations and its field."
 
 	" Printing the annotations for the attribute"
 
-	| attributeSource attributeSourceFromName |
-	aAttribute annotationInstances
-		do: [ :annotationInstance | 
-			self clone visit: annotationInstance.
-			self crlf ].
+	| attributeSource attributeSourceFromName modifiers |
+	aAttribute annotationInstances do: [ :annotationInstance | 
+		self clone visit: annotationInstance.
+		self crlf ].
 
 	"Printing modifiers"
 	self indent.
-	(aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ])
-		do: [ :modifier | 
-			self
-				<<< modifier;
-				space ].
-
+	modifiers := aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ].
+	modifiers isString
+		ifTrue: [ self <<< modifiers ]
+		ifFalse: [ modifiers do: [ :modifier | self <<< modifier ] separatedBy: [ self space ] ].
+	self space.
 	"Declared Type"
 	aAttribute declaredType
 		ifNotNil: [ self printDeclaredType: aAttribute declaredType ]
@@ -249,17 +248,12 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	"This is an hack to get the affectation is any (hack because some problems with annotations that are sometimes part of the sourceAnchor...)"
 	attributeSource := aAttribute sourceAnchor sourceText.
-	attributeSource
-		ifNotEmpty: [ attributeSourceFromName := attributeSource
-				copyFrom: (attributeSource findString: aAttribute name)
-				to: attributeSource size.
-			(attributeSourceFromName includesSubstring: '=')
-				ifTrue: [ self
-						space;
-						<<<
-							((attributeSourceFromName
-								copyFrom: (attributeSourceFromName findString: '=')
-								to: attributeSourceFromName size) removeSuffix: ';') ] ].
+	attributeSource ifNotEmpty: [ 
+		attributeSourceFromName := attributeSource copyFrom: (attributeSource findString: aAttribute name) to: attributeSource size.
+		(attributeSourceFromName includesSubstring: '=') ifTrue: [ 
+			self
+				space;
+				<<< ((attributeSourceFromName copyFrom: (attributeSourceFromName findString: '=') to: attributeSourceFromName size) removeSuffix: ';') ] ].
 	self <<< ';'
 ]
 

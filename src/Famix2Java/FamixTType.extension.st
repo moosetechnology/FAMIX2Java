@@ -2,10 +2,11 @@ Extension { #name : #FamixTType }
 
 { #category : #'*Famix2Java' }
 FamixTType >> fullNamePrintOn: aStream [
+
 	| parent |
-	parent := self container.
-	parent
-		ifNotNil: [ 	parent fullNamePrintOn: aStream.
-				aStream nextPutAll: '.' ].
-	self name ifNotNil: [ aStream nextPutAll: self name ].
+	parent := self typeContainer.
+	parent ifNotNil: [ 
+		parent fullNamePrintOn: aStream.
+		aStream nextPutAll: '.' ].
+	self name ifNotNil: [ aStream nextPutAll: self name ]
 ]
