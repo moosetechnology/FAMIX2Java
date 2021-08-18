@@ -392,8 +392,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				sorted: [ :p :p2 | p sourceAnchor startPos < p2 sourceAnchor startPos ])
 				do: [ :parameter | self clone visit: parameter ]
 				separatedBy: [ self <<< ', ' ].
-			self <<< ')' ]
-		ifTrue: [ self << 'static' ].
+			self <<< ')' ].
 	"print exception"
 	((aMethod withMethodsOverriding
 		collect: [ :m | m thrownExceptions collect: #exceptionClass ])
