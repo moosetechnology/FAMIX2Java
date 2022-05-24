@@ -1,3 +1,3 @@
-# FAMIX2Java
+# FamixJava2Java
 
-A visitor to export FAMIX compatibility Java Model to Java code
+A visitor to export FamixJava model to Java code
