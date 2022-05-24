@@ -65,17 +65,29 @@ FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 
 { #category : #printing }
 FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
+
 	| declaredTypes |
-	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened asOrderedCollection
-		,
-			((aClass allToScope: FamixTParameter) asOrderedCollection , (aClass methods collect: #declaredType)
-				, (aClass methods collect: [ :m | m caughtExceptions collect: #exceptionClass ])) flattened) asSet reject: #isNil)
-		flatCollect: [ :element | element atAnyScope: {FamixTClass . FamixTParameterizedType} ]) reject: [ :class | class = aClass ]) asSet.
-	(declaredTypes select: [ :dType | dType class = FAMIXParameterizedType ])
-		do: [ :parameterizedType | 
-			declaredTypes addAll: parameterizedType arguments.
-			declaredTypes add: parameterizedType parameterizableClass ].
-	declaredTypes := declaredTypes reject: [ :dType | dType class = FAMIXParameterizedType or: [ dType isAnonymousClass ] ].
+	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened
+		                     asSet
+	                     ,
+		                     (((aClass allToScope: FamixTParameter) 
+			                       collect: #declaredType)
+		                      , (aClass methods collect: #declaredType)
+		                      , (aClass methods collect: [ :m | 
+				                       m caughtExceptions collect: #exceptionClass ]))
+			                     flattened) asSet reject: #isNil) flatCollect: [ 
+		                   :element | 
+		                   element atAnyScope: { 
+				                   FamixTClass.
+				                   FamixTParameterizedType } ]) reject: [ :class | 
+		                  class = aClass ]) asSet.
+	(declaredTypes select: [ :dType | dType isParameterizedType ]) do: [ 
+		:parameterizedType | 
+		declaredTypes addAll: parameterizedType arguments.
+		declaredTypes add: parameterizedType parameterizableClass ].
+	declaredTypes := declaredTypes reject: [ :dType | 
+		                 dType isParameterizedType or: [ 
+			                 dType isAnonymousClass ] ].
 	^ declaredTypes
 ]
 
