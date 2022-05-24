@@ -90,8 +90,7 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 		                  class = aClass ]) asSet.
 	(declaredTypes select: [ :dType | dType isParameterizedType ]) do: [ 
 		:parameterizedType | 
-		declaredTypes addAll: parameterizedType arguments.
-		declaredTypes add: parameterizedType parameterizableClass ].
+		declaredTypes addAll: parameterizedType allParametrizedClasses ].
 	declaredTypes := declaredTypes reject: [ :dType | 
 		                 dType isParameterizedType or: [ 
 			                 dType isAnonymousClass or: [ dType name = '?' ] ] ].
@@ -446,13 +445,15 @@ FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
 
 { #category : #generated }
 FAMIX2JavaVisitor >> visitParameterizedType: aParameterizedType [
+
 	self <<< aParameterizedType name.
-	self <<< '<'.
-	aParameterizedType arguments
-		do: [ :argument | 
-			argument isParameterType
-				ifTrue: [ self visitParameterizableType: argument ]
-				ifFalse: [ self <<< argument name ] ]
-		separatedBy: [ self <<< ',' ].
-	self <<< '>'
+	aParameterizedType arguments ifNotEmpty: [ :arguments | 
+		self <<< '<'.
+		arguments
+			do: [ :argument | 
+				argument isParameterType
+					ifTrue: [ self visitParameterizableType: argument ]
+					ifFalse: [ self <<< argument name ] ]
+			separatedBy: [ self <<< ',' ].
+		self <<< '>' ]
 ]
