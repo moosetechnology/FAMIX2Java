@@ -67,7 +67,7 @@ FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 
 	| declaredTypes |
-	self haltIf: [ aClass name includesSubstring: 'ServiceAPAE' ].
+"	self haltIf: [ aClass name includesSubstring: 'ServiceAPAE' ]."
 	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened
 		                     asSet
 	                     ,
