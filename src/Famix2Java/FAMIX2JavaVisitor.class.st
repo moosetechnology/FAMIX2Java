@@ -67,19 +67,26 @@ FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 
 	| declaredTypes |
+	self haltIf: [ aClass name includesSubstring: 'ServiceAPAE' ].
 	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened
 		                     asSet
 	                     ,
 		                     (((aClass allToScope: FamixTParameter) 
 			                       collect: #declaredType)
+		                      ,
+		                      ((aClass allToScope: FamixTStructuralEntity) 
+			                       collect: #declaredType)
 		                      , (aClass methods collect: #declaredType)
 		                      , (aClass methods collect: [ :m | 
-				                       m caughtExceptions collect: #exceptionClass ]))
+				                       m caughtExceptions collect: #exceptionClass ])
+		                      , (aClass methods collect: [ :m | 
+				                       m thrownExceptions collect: #exceptionClass ]))
 			                     flattened) asSet reject: #isNil) flatCollect: [ 
 		                   :element | 
 		                   element atAnyScope: { 
 				                   FamixTClass.
-				                   FamixTParameterizedType } ]) reject: [ :class | 
+				                   FamixTParameterizedType.
+				                   FamixTEnum } ]) reject: [ :class | 
 		                  class = aClass ]) asSet.
 	(declaredTypes select: [ :dType | dType isParameterizedType ]) do: [ 
 		:parameterizedType | 
@@ -87,7 +94,7 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 		declaredTypes add: parameterizedType parameterizableClass ].
 	declaredTypes := declaredTypes reject: [ :dType | 
 		                 dType isParameterizedType or: [ 
-			                 dType isAnonymousClass ] ].
+			                 dType isAnonymousClass or: [ dType name = '?' ] ] ].
 	^ declaredTypes
 ]
 
@@ -256,10 +263,10 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	"Printing modifiers"
 	self indent.
-	modifiers := aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ].
+	"modifiers := aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ].
 	modifiers isString
 		ifTrue: [ self <<< modifiers ]
-		ifFalse: [ modifiers do: [ :modifier | self <<< modifier ] separatedBy: [ self space ] ].
+		ifFalse: [ modifiers do: [ :modifier | self <<< modifier ] separatedBy: [ self space ] ]."
 	self space.
 	"Declared Type"
 	aAttribute declaredType
@@ -342,43 +349,56 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitMethod: aMethod [
+
 	aMethod isStub ifTrue: [ ^ self ].
 	"Printing method annotations"
-	aMethod annotationInstances
-		do: [ :annotationInstance | 
-			self clone visit: annotationInstance.
-			self crlf ].
+	aMethod annotationInstances do: [ :annotationInstance | 
+		self clone visit: annotationInstance.
+		self crlf ].
 	"Printing modifiers of method ex: static,public/private/protected"
-	aMethod modifiers
+	"aMethod modifiers
 		do: [ :modifier | 
 			self
 				<< modifier;
-				space ].
+				space ]."
+	self indent.
+	aMethod isPrivate ifTrue: [ self <<< 'private ' ].
+	aMethod isProtected ifTrue: [ self <<< 'protected ' ].
+	aMethod isPublic ifTrue: [ self <<< 'public ' ].
+	aMethod isClassSide ifTrue: [ self <<< 'static ' ].
 	"Printing return type for method"
-	aMethod declaredType
-		ifNotNil: [ :declaredType | 
-			self printDeclaredType: declaredType.
-			currentStream << String space ].
+	aMethod declaredType ifNotNil: [ :declaredType | 
+		self printDeclaredType: declaredType.
+		currentStream << String space ].
 	"Printing name + parameters of method"
-	(aMethod name = '<Initializer>' or: [ aMethod isInitializer and: [ aMethod isConstructor not ] ])
-		ifFalse: [ self
+	(aMethod name = '<Initializer>' or: [ 
+		 aMethod isInitializer and: [ aMethod isConstructor not ] ])
+		ifFalse: [ 
+			self
 				<<< aMethod name;
 				<<< '('.
-			(aMethod parameters sorted: [ :p :p2 | p sourceAnchor startPos < p2 sourceAnchor startPos ])
+			(aMethod parameters sorted: [ :p :p2 | 
+				 p sourceAnchor startPos < p2 sourceAnchor startPos ])
 				do: [ :parameter | self clone visit: parameter ]
 				separatedBy: [ self <<< ', ' ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
 	"print exception"
-	((aMethod withMethodsOverriding collect: [ :m | m thrownExceptions collect: #exceptionClass ]) flattened asSet asOrderedCollection sorted: #name ascending)
-		ifNotEmpty: [ :exceptions | 
-			self <<< ' throws '.
-			exceptions do: [ :exception | self <<< exception name ] separatedBy: [ self <<< ', ' ] ].
+	((aMethod withMethodsOverriding collect: [ :m | 
+		  m thrownExceptions collect: #exceptionClass ]) flattened asSet
+		 asOrderedCollection sorted: #name ascending) ifNotEmpty: [ 
+		:exceptions | 
+		self <<< ' throws '.
+		exceptions
+			do: [ :exception | self <<< exception name ]
+			separatedBy: [ self <<< ', ' ] ].
 
 	"Printing body of method if class is not abstract or an interface"
-	((aMethod atScope: FamixTClass) anyOne isInterface or: [ aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
+	((aMethod atScope: FamixTClass) anyOne isInterface or: [ 
+		 aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
-		ifFalse: [ currentStream
+		ifFalse: [ 
+			currentStream
 				<< ' {';
 				<< String crlf.
 			self
