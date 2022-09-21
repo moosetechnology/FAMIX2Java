@@ -212,7 +212,7 @@ FAMIX2JavaVisitor >> printImportsAnnotationTypes: annotationTypes [
 
 { #category : #printing }
 FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
-	(declaredTypes sorted: #fullName ascending)
+	(declaredTypes sorted: #mooseName ascending)
 		do: [ :class | 
 			self << 'import '.
 			class fullNamePrintOn: currentStream.
