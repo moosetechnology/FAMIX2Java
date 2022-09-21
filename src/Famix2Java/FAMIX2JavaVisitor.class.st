@@ -13,7 +13,8 @@ Class {
 		'currentStream',
 		'rootFolder',
 		'tabs',
-		'tabulationSize'
+		'tabulationSize',
+		'endOfLine'
 	],
 	#category : #Famix2Java
 }
@@ -32,7 +33,7 @@ FAMIX2JavaVisitor >> <<< aString [
 
 { #category : #'private-exporting' }
 FAMIX2JavaVisitor >> crlf [
-	currentStream << String crlf
+	self eol
 ]
 
 { #category : #accessing }
@@ -45,6 +46,24 @@ FAMIX2JavaVisitor >> currentStream [
 FAMIX2JavaVisitor >> currentStream: aStream [
 
 	currentStream := aStream
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> endOfLine [
+
+	^ endOfLine
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> endOfLine: anObject [
+
+	endOfLine := anObject
+]
+
+{ #category : #'private-exporting' }
+FAMIX2JavaVisitor >> eol [
+	"print the end of line that can be configured"
+	self <<< self endOfLine
 ]
 
 { #category : #'public-exporting' }
@@ -112,8 +131,11 @@ FAMIX2JavaVisitor >> indentPlus [
 	tabs := tabs + 1
 ]
 
-{ #category : #accessing }
+{ #category : #initialization }
 FAMIX2JavaVisitor >> initialize [
+
+	super initialize.
+	self endOfLine: String crlf.
 	tabs := 0.
 	tabulationSize := 4
 ]
@@ -352,7 +374,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 	"Printing method annotations"
 	aMethod annotationInstances do: [ :annotationInstance | 
 		self clone visit: annotationInstance.
-		self crlf ].
+		self eol ].
 	"Printing modifiers of method ex: static,public/private/protected"
 	"aMethod modifiers
 		do: [ :modifier | 
@@ -383,25 +405,24 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 		ifTrue: [ self << 'static' ].
 	"print exception"
 	((aMethod withMethodsOverriding collect: [ :m | 
-		  m thrownExceptions collect: #exceptionClass ]) flattened asSet
-		 asOrderedCollection sorted: #name ascending) ifNotEmpty: [ 
-		:exceptions | 
-		self <<< ' throws '.
-		exceptions
-			do: [ :exception | self <<< exception name ]
-			separatedBy: [ self <<< ', ' ] ].
+		  m thrownExceptions , m declaredExceptions collect: #exceptionClass ])
+		 flattened asSet asOrderedCollection sorted: #name ascending) 
+		ifNotEmpty: [ :exceptions | 
+			self <<< ' throws '.
+			exceptions
+				do: [ :exception | self <<< exception name ]
+				separatedBy: [ self <<< ', ' ] ].
 
 	"Printing body of method if class is not abstract or an interface"
 	((aMethod atScope: FamixTClass) anyOne isInterface or: [ 
 		 aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
 		ifFalse: [ 
-			currentStream
-				<< ' {';
-				<< String crlf.
+			currentStream << ' {'.
+			self eol.
+			self << aMethod bodySourceText.
 			self
-				<< aMethod bodySourceText;
-				crlf;
+				eol;
 				<< '}' ]
 ]
 
