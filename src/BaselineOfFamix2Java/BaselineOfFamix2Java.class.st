@@ -25,7 +25,11 @@ BaselineOfFamix2Java >> defineGroups: spec [
 
 { #category : #baselines }
 BaselineOfFamix2Java >> definePackages: spec [
+
 	spec
 		package: 'Famix-Compatibility-Visitor';
-		package: 'Famix2Java'  with: [ spec requires: #('Famix-Compatibility-Visitor') ]
+		package: 'Famix2Java'
+		with: [ spec requires: #( 'Famix-Compatibility-Visitor' ) ];
+		package: 'Famix2Java-Tests'
+		with: [ spec requires: #( 'Famix2Java' ) ]
 ]
