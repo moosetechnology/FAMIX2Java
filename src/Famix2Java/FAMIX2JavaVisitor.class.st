@@ -98,9 +98,11 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 		                      , (aClass methods collect: [ :m | 
 				                       m caughtExceptions collect: #exceptionClass ])
 		                      , (aClass methods collect: [ :m | 
-				                       m thrownExceptions collect: #exceptionClass ]))
-			                     flattened) asSet reject: #isNil) flatCollect: [ 
-		                   :element | 
+				                       m thrownExceptions collect: #exceptionClass ])
+		                      , (aClass methods collect: [ :m | 
+				                       m declaredExceptions collect:
+					                       #exceptionClass ])) flattened) asSet 
+		                    reject: #isNil) flatCollect: [ :element | 
 		                   element atAnyScope: { 
 				                   FamixTClass.
 				                   FamixTParameterizedType.
