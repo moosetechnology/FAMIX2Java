@@ -45,11 +45,40 @@ FAMIX2JavaVisitorTest >> testVisitAttribute [
 ]
 
 { #category : #test }
-FAMIX2JavaVisitorTest >> testVisitMethod [
+FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
 	| method methodClass exception exceptionClass model resultString |
 	model := FamixJavaModel new.
 	exception := FamixJavaDeclaredException new.
+	exceptionClass := FamixJavaClass new
+		                  name: 'MyException';
+		                  yourself.
+	exception exceptionClass: exceptionClass.
+	method := FamixJavaMethod new.
+	method name: 'aMethod'.
+	method addDeclaredException: exception.
+
+	methodClass := FamixJavaClass new.
+	methodClass addMethod: method.
+	model addAll: { 
+			exception.
+			exceptionClass.
+			method.
+			methodClass }.
+	resultString := String streamContents: [ :stream | 
+		visitor currentStream: stream.
+		method accept: visitor ].
+	self assert: resultString equals: 'aMethod() throws MyException {
+
+}'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitMethodWithThrownException [
+
+	| method methodClass exception exceptionClass model resultString |
+	model := FamixJavaModel new.
+	exception := FamixJavaThrownException new.
 	exceptionClass := FamixJavaClass new
 		                  name: 'MyException';
 		                  yourself.
