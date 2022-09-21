@@ -276,7 +276,7 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	" Printing the annotations for the attribute"
 
-	| attributeSource attributeSourceFromName modifiers |
+	| attributeSource attributeSourceFromName |
 	aAttribute annotationInstances do: [ :annotationInstance | 
 		self clone visit: annotationInstance.
 		self crlf ].
@@ -287,7 +287,6 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 	modifiers isString
 		ifTrue: [ self <<< modifiers ]
 		ifFalse: [ modifiers do: [ :modifier | self <<< modifier ] separatedBy: [ self space ] ]."
-	self space.
 	"Declared Type"
 	aAttribute declaredType
 		ifNotNil: [ self printDeclaredType: aAttribute declaredType ]

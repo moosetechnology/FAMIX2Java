@@ -18,6 +18,33 @@ FAMIX2JavaVisitorTest >> setUp [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitAttribute [
+
+	| attribute attributeClass attributeDeclaredType exception sourceAnchor model resultString |
+	model := FamixJavaModel new.
+	attributeDeclaredType := FamixJavaClass new.
+	attributeDeclaredType name: 'AttributeClass'.
+	exception := FamixJavaDeclaredException new.
+	attribute := FamixJavaAttribute new.
+	attribute name: 'anAttribute'.
+	attribute declaredType: attributeDeclaredType. 
+	sourceAnchor := FamixJavaSourceTextAnchor new.
+	sourceAnchor source: ''.
+	attribute sourceAnchor: sourceAnchor.
+	attributeClass := FamixJavaClass new.
+	attributeClass addAttribute: attribute.
+	model addAll: { 
+			exception.
+			attribute.
+			attributeClass.
+			sourceAnchor }.
+	resultString := String streamContents: [ :stream | 
+		                visitor currentStream: stream.
+		                attribute accept: visitor ].
+	self assert: resultString equals: 'AttributeClass anAttribute;'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethod [
 
 	| method methodClass exception exceptionClass model resultString |
