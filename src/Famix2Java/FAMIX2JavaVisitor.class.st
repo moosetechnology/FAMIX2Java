@@ -86,28 +86,27 @@ FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 
 	| declaredTypes |
-	declaredTypes := (((((aClass queryAllOutgoing collect: #to) flattened
-		                     asSet
-	                     ,
-		                     (((aClass allToScope: FamixTParameter) 
-			                       collect: #declaredType)
-		                      ,
-		                      ((aClass allToScope: FamixTStructuralEntity) 
-			                       collect: #declaredType)
-		                      , (aClass methods collect: #declaredType)
-		                      , (aClass methods collect: [ :m | 
-				                       m caughtExceptions collect: #exceptionClass ])
-		                      , (aClass methods collect: [ :m | 
-				                       m thrownExceptions collect: #exceptionClass ])
-		                      , (aClass methods collect: [ :m | 
-				                       m declaredExceptions collect:
-					                       #exceptionClass ])) flattened) asSet 
-		                    reject: #isNil) flatCollect: [ :element | 
-		                   element atAnyScope: { 
-				                   FamixTClass.
-				                   FamixTParameterizedType.
-				                   FamixTEnum } ]) reject: [ :class | 
-		                  class = aClass ]) asSet.
+	declaredTypes := ((((aClass queryAllOutgoing collect: #to) flattened
+		                    asSet
+	                    ,
+		                    (((aClass allToScope: FamixTParameter) collect:
+			                      #declaredType)
+		                     ,
+		                     ((aClass allToScope: FamixTStructuralEntity) 
+			                      collect: #declaredType)
+		                     , (aClass methods collect: #declaredType)
+		                     , (aClass methods collect: [ :m | 
+				                      m caughtExceptions collect: #exceptionClass ])
+		                     , (aClass methods collect: [ :m | 
+				                      m thrownExceptions collect: #exceptionClass ])
+		                     , (aClass methods collect: [ :m | 
+				                      m declaredExceptions collect:
+					                      #exceptionClass ])) flattened) asSet 
+		                   reject: #isNil) flatCollect: [ :element | 
+		                  element atAnyScope: { 
+				                  FamixTClass.
+				                  FamixTParameterizedType.
+				                  FamixTEnum } ]) asSet.
 	(declaredTypes select: [ :dType | dType isParameterizedType ]) do: [ 
 		:parameterizedType | 
 		declaredTypes addAll: parameterizedType allParametrizedClasses ].
@@ -221,6 +220,14 @@ FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
 			self
 				<<< ';';
 				crlf ]
+]
+
+{ #category : #printing }
+FAMIX2JavaVisitor >> printMethodAnnotations: aMethod [
+
+	aMethod annotationInstances do: [ :annotationInstance | 
+		self clone visit: annotationInstance.
+		self eol ]
 ]
 
 { #category : #accessing }
@@ -373,9 +380,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 
 	aMethod isStub ifTrue: [ ^ self ].
 	"Printing method annotations"
-	aMethod annotationInstances do: [ :annotationInstance | 
-		self clone visit: annotationInstance.
-		self eol ].
+	self printMethodAnnotations: aMethod.
 	"Printing modifiers of method ex: static,public/private/protected"
 	"aMethod modifiers
 		do: [ :modifier | 
