@@ -16,7 +16,8 @@ FamixTMethod >> bodySourceText [
 { #category : #'*Famix2Java' }
 FamixTMethod >> isAnInitializer [
 
-	^ self mooseModel isSmalltalk
+	^ ((self mooseModel respondsTo: #isSmalltalk) and: [ 
+		   self mooseModel isSmalltalk ])
 		  ifTrue: [ 
 			  (('*initialize*' match: self category) or: [ 
 				   '*initialize*' match: self name ]) or: [ self isConstructor ] ]
