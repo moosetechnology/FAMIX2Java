@@ -4,5 +4,11 @@ SmalltalkCISpec {
       #baseline : 'Famix2Java',
       #directory : 'src'
     }
-  ]
+  ],
+  #testing : {
+    #coverage : {
+      #packages : [ 'Famix2Java.*' ],
+      #format : #lcov
+    }
+  }
 }
