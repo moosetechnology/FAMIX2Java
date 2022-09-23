@@ -12,3 +12,13 @@ FamixTMethod >> bodySourceText [
 				to: (sourceText findLastOccurrenceOfString: '}' startingAt: 1) - 1 ]
 		ifEmpty: [ '' ]
 ]
+
+{ #category : #'*Famix2Java' }
+FamixTMethod >> isAnInitializer [
+
+	^ self mooseModel isSmalltalk
+		  ifTrue: [ 
+			  (('*initialize*' match: self category) or: [ 
+				   '*initialize*' match: self name ]) or: [ self isConstructor ] ]
+		  ifFalse: [ self name = '<Initializer>' or: [ self isConstructor ] ]
+]

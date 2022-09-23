@@ -398,7 +398,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 		currentStream << String space ].
 	"Printing name + parameters of method"
 	(aMethod name = '<Initializer>' or: [ 
-		 aMethod isInitializer and: [ aMethod isConstructor not ] ])
+		 aMethod isAnInitializer and: [ aMethod isConstructor not ] ])
 		ifFalse: [ 
 			self
 				<<< aMethod name;
