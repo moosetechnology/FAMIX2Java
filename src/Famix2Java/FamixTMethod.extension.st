@@ -23,3 +23,13 @@ FamixTMethod >> isAnInitializer [
 				   '*initialize*' match: self name ]) or: [ self isConstructor ] ]
 		  ifFalse: [ self name = '<Initializer>' or: [ self isConstructor ] ]
 ]
+
+{ #category : #'*Famix2Java' }
+FamixTMethod >> withMethodsOverriding [
+
+	^ (self belongsTo subclassHierarchy
+		   collect: [ :each | each implementationOf: self signature ]
+		   thenSelect: #isNotNil)
+		  add: self;
+		  yourself
+]
