@@ -96,23 +96,27 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 			                      collect: #declaredType)
 		                     , (aClass methods collect: #declaredType)
 		                     , (aClass methods collect: [ :m | 
-				                      m caughtExceptions collect: #exceptionClass ])
+				                      m caughtExceptions "collect: #exceptionClass" ])
 		                     , (aClass methods collect: [ :m | 
-				                      m thrownExceptions collect: #exceptionClass ])
+				                      m thrownExceptions "collect: #exceptionClass" ])
 		                     , (aClass methods collect: [ :m | 
-				                      m declaredExceptions collect:
-					                      #exceptionClass ])) flattened) asSet 
-		                   reject: #isNil) flatCollect: [ :element | 
+				                      m declaredExceptions "collect:
+					                      #exceptionClass" ]))
+			                    flattened) asSet reject: #isNil) flatCollect: [ 
+		                  :element | 
 		                  element atAnyScope: { 
 				                  FamixTClass.
 				                  FamixTParameterizedType.
 				                  FamixTEnum } ]) asSet.
-	(declaredTypes select: [ :dType | dType isParameterizedType ]) do: [ 
+	(declaredTypes select: [ :dType | 
+		 dType isKindOf: FamixJavaParameterizedType ]) do: [ 
 		:parameterizedType | 
 		declaredTypes addAll: parameterizedType allParametrizedClasses ].
 	declaredTypes := declaredTypes reject: [ :dType | 
-		                 dType isParameterizedType or: [ 
-			                 dType isAnonymousClass or: [ dType name = '?' ] ] ].
+		                 (dType isKindOf: FamixJavaParameterizedType) or: [ 
+			                 ((dType isKindOf: FamixJavaType) and: [ 
+				                  dType isAnonymousClass ]) or: [ 
+				                 dType name = '?' ] ] ].
 	^ declaredTypes
 ]
 
