@@ -20,11 +20,10 @@ FAMIX2JavaVisitorTest >> setUp [
 { #category : #test }
 FAMIX2JavaVisitorTest >> testVisitAttribute [
 
-	| attribute attributeClass attributeDeclaredType exception sourceAnchor model resultString |
+	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
 	model := FamixJavaModel new.
 	attributeDeclaredType := FamixJavaClass new.
 	attributeDeclaredType name: 'AttributeClass'.
-	exception := FamixJavaDeclaredException new.
 	attribute := FamixJavaAttribute new.
 	attribute name: 'anAttribute'.
 	attribute declaredType: attributeDeclaredType. 
@@ -34,7 +33,6 @@ FAMIX2JavaVisitorTest >> testVisitAttribute [
 	attributeClass := FamixJavaClass new.
 	attributeClass addAttribute: attribute.
 	model addAll: { 
-			exception.
 			attribute.
 			attributeClass.
 			sourceAnchor }.
@@ -47,13 +45,11 @@ FAMIX2JavaVisitorTest >> testVisitAttribute [
 { #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
-	| method methodClass exception exceptionClass model resultString |
+	| method methodClass exception model resultString |
 	model := FamixJavaModel new.
-	exception := FamixJavaDeclaredException new.
-	exceptionClass := FamixJavaClass new
-		                  name: 'MyException';
-		                  yourself.
-	exception exceptionClass: exceptionClass.
+	exception := FamixJavaException new
+		             name: 'MyException';
+		             yourself.
 	method := FamixJavaMethod new.
 	method name: 'aMethod'.
 	method addDeclaredException: exception.
@@ -62,12 +58,11 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 	methodClass addMethod: method.
 	model addAll: { 
 			exception.
-			exceptionClass.
 			method.
 			methodClass }.
 	resultString := String streamContents: [ :stream | 
-		visitor currentStream: stream.
-		method accept: visitor ].
+		                visitor currentStream: stream.
+		                method accept: visitor ].
 	self assert: resultString equals: 'aMethod() throws MyException {
 
 }'
@@ -76,27 +71,24 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 { #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithThrownException [
 
-	| method methodClass exception exceptionClass model resultString |
+	| method methodClass exception model resultString |
 	model := FamixJavaModel new.
-	exception := FamixJavaThrownException new.
-	exceptionClass := FamixJavaClass new
-		                  name: 'MyException';
-		                  yourself.
-	exception exceptionClass: exceptionClass.
+	exception := FamixJavaException new
+		             name: 'MyException';
+		             yourself.
 	method := FamixJavaMethod new.
 	method name: 'aMethod'.
-	method addDeclaredException: exception.
+	method addThrownException: exception.
 
 	methodClass := FamixJavaClass new.
 	methodClass addMethod: method.
 	model addAll: { 
 			exception.
-			exceptionClass.
 			method.
 			methodClass }.
 	resultString := String streamContents: [ :stream | 
-		visitor currentStream: stream.
-		method accept: visitor ].
+		                visitor currentStream: stream.
+		                method accept: visitor ].
 	self assert: resultString equals: 'aMethod() throws MyException {
 
 }'

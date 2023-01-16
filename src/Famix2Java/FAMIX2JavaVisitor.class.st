@@ -415,7 +415,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 		ifTrue: [ self << 'static' ].
 	"print exception"
 	((aMethod withMethodsOverriding collect: [ :m | 
-		  m thrownExceptions , m declaredExceptions collect: #exceptionClass ])
+		  m thrownExceptions , m declaredExceptions ])
 		 flattened asSet asOrderedCollection sorted: #name ascending) 
 		ifNotEmpty: [ :exceptions | 
 			self <<< ' throws '.
