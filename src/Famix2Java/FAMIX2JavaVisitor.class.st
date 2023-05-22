@@ -140,7 +140,7 @@ FAMIX2JavaVisitor >> indentPlus [
 FAMIX2JavaVisitor >> initialize [
 
 	super initialize.
-	self endOfLine: String crlf.
+	self endOfLine: OSPlatform current lineEnding.
 	tabs := 0.
 	tabulationSize := 4
 ]
