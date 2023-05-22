@@ -224,7 +224,7 @@ FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
 			class fullNamePrintOn: currentStream.
 			self
 				<<< ';';
-				crlf ]
+				eol ]
 ]
 
 { #category : #printing }
