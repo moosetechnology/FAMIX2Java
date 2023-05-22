@@ -33,7 +33,8 @@ FAMIX2JavaVisitor >> <<< aString [
 
 { #category : #'private-exporting' }
 FAMIX2JavaVisitor >> crlf [
-	self eol
+
+	currentStream << String crlf
 ]
 
 { #category : #accessing }
