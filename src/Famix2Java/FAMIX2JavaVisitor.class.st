@@ -311,7 +311,7 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 		<<< aAttribute name.
 
 	"This is an hack to get the affectation is any (hack because some problems with annotations that are sometimes part of the sourceAnchor...)"
-	attributeSource := aAttribute sourceAnchor sourceText.
+	attributeSource := aAttribute sourceAnchor ifNil: [ '' ] ifNotNil: [ :sourceAnchor | sourceAnchor sourceText ].
 	attributeSource ifNotEmpty: [ 
 		attributeSourceFromName := attributeSource copyFrom: (attributeSource findString: aAttribute name) to: attributeSource size.
 		(attributeSourceFromName includesSubstring: '=') ifTrue: [ 
@@ -323,56 +323,54 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitClass: aClass [
+
 	| file |
 	file := self rootFolder / (aClass name , '.java').
 	file deleteIfAbsent: [  ].
-	file
-		writeStreamDo: [ :stream | 
-			currentStream := stream.
-			"Printing class package and imports if the class is not an inner class"
-			aClass container isNamespace
-				ifTrue: [ self << 'package '.
-					aClass container fullNamePrintOn: currentStream.
-					self
-						<<< ';';
-						crlf;
-						crlf.
-					self printImports: aClass.
-					self crlf ].
-			"Printing class annotations"
-			aClass annotationInstances
-				do: [ :annotationInstance | 
-					self clone visit: annotationInstance.
-					self crlf ].
-			"Printing Class declaration"
-			currentStream << 'public '.
-			aClass isInterface
-				ifTrue: [ currentStream << 'interface ' ]
-				ifFalse: [ currentStream << 'class ' ].
-			currentStream << aClass name.
-			"printing inheritance and implementation"
-			self printExtends: aClass.
-			self printImplements: aClass.
-			currentStream
-				<< ' {';
-				<< String crlf.
-			"Printing Attributs"
-			tabs := tabs + 1.
-			aClass attributes
-				do: [ :attribute | 
-					self clone visit: attribute.
-					currentStream << String crlf ].
+	file writeStreamDo: [ :stream | 
+		currentStream := stream.
+		"Printing class package and imports if the class is not an inner class"
+		(aClass typeContainer isNotNil and: [ aClass container isNamespace ]) 
+			ifTrue: [ 
+				self << 'package '.
+				aClass container fullNamePrintOn: currentStream.
+				self
+					<<< ';';
+					crlf;
+					crlf.
+				self printImports: aClass.
+				self crlf ].
+		"Printing class annotations"
+		aClass annotationInstances do: [ :annotationInstance | 
+			self clone visit: annotationInstance.
+			self crlf ].
+		"Printing Class declaration"
+		currentStream << 'public '.
+		aClass isInterface
+			ifTrue: [ currentStream << 'interface ' ]
+			ifFalse: [ currentStream << 'class ' ].
+		currentStream << aClass name.
+		"printing inheritance and implementation"
+		self printExtends: aClass.
+		self printImplements: aClass.
+		currentStream
+			<< ' {';
+			<< String crlf.
+		"Printing Attributs"
+		tabs := tabs + 1.
+		aClass attributes do: [ :attribute | 
+			self clone visit: attribute.
+			currentStream << String crlf ].
+		self crlf.
+		"Printing Methods"
+		aClass methods do: [ :method | 
 			self crlf.
-			"Printing Methods"
-			aClass methods
-				do: [ :method | 
-					self crlf.
-					self clone visit: method.
-					self crlf ].
-			"Closing Class"
-			currentStream
-				<< String crlf;
-				<< '}' ]
+			self clone visit: method.
+			self crlf ].
+		"Closing Class"
+		currentStream
+			<< String crlf;
+			<< '}' ]
 ]
 
 { #category : #generated }
