@@ -8,7 +8,9 @@ FAMIX2JavaVisitor new
 "
 Class {
 	#name : #FAMIX2JavaVisitor,
-	#superclass : #FAMIXVisitor,
+	#superclass : #Object,
+	#traits : 'FamixJavaVisitor',
+	#classTraits : 'FamixJavaVisitor classTrait',
 	#instVars : [
 		'currentStream',
 		'rootFolder',
@@ -69,8 +71,8 @@ FAMIX2JavaVisitor >> eol [
 
 { #category : #'public-exporting' }
 FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
-	aFAMIXCompatibilityModel allModelNamespaces
-		do: [ :namespace | self clone visit: namespace ]
+	aFAMIXCompatibilityModel allModelPackages
+		do: [ :package | package accept: self clone ]
 ]
 
 { #category : #printing }
@@ -87,7 +89,7 @@ FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 
 	| declaredTypes |
-	declaredTypes := ((((aClass queryAllOutgoing collect: #to) flattened
+	declaredTypes := ((((aClass queryAllOutgoing collect: #target) flattened
 		                    asSet
 	                    ,
 		                    (((aClass allToScope: FamixTParameter) collect:
@@ -231,7 +233,7 @@ FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
 FAMIX2JavaVisitor >> printMethodAnnotations: aMethod [
 
 	aMethod annotationInstances do: [ :annotationInstance | 
-		self clone visit: annotationInstance.
+		annotationInstance accept: self clone.
 		self eol ]
 ]
 
@@ -256,24 +258,19 @@ FAMIX2JavaVisitor >> space [
 	currentStream << String space
 ]
 
-{ #category : #accessing }
-FAMIX2JavaVisitor >> visit: anEntity [
-	super visit: anEntity
-]
-
 { #category : #generated }
 FAMIX2JavaVisitor >> visitAnnotationInstance: aAnnotationInstance [
+
 	self
 		<< '@';
 		<<< aAnnotationInstance annotationType name.
-	aAnnotationInstance attributes
-		ifNotEmpty: [ :attributes | 
-			self <<< '('.
-			1 to: attributes size - 1 do: [ :index | 
-				self clone visit: (attributes at: index).
-				self <<< ',' ].
-			self clone visit: attributes last.
-			self <<< ')' ]
+	aAnnotationInstance attributes ifNotEmpty: [ :attributes | 
+		self <<< '('.
+		1 to: attributes size - 1 do: [ :index | 
+			(attributes at: index) accept: self clone.
+			self <<< ',' ].
+		attributes last accept: self clone.
+		self <<< ')' ]
 ]
 
 { #category : #accessing }
@@ -292,8 +289,8 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	| attributeSource attributeSourceFromName |
 	aAttribute annotationInstances do: [ :annotationInstance | 
-		self clone visit: annotationInstance.
-		self crlf ].
+		annotationInstance accept: self clone .
+		self eol ].
 
 	"Printing modifiers"
 	self indent.
@@ -330,16 +327,16 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	file writeStreamDo: [ :stream | 
 		currentStream := stream.
 		"Printing class package and imports if the class is not an inner class"
-		(aClass typeContainer isNotNil and: [ aClass container isNamespace ]) 
-			ifTrue: [ 
-				self << 'package '.
-				aClass container fullNamePrintOn: currentStream.
-				self
-					<<< ';';
-					crlf;
-					crlf.
-				self printImports: aClass.
-				self crlf ].
+		(aClass typeContainer isNotNil and: [ 
+			 aClass typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [ 
+			self << 'package '.
+			aClass typeContainer fullNamePrintOn: currentStream.
+			self
+				<<< ';';
+				crlf;
+				crlf.
+			self printImports: aClass.
+			self crlf ].
 		"Printing class annotations"
 		aClass annotationInstances do: [ :annotationInstance | 
 			self clone visit: annotationInstance.
@@ -359,13 +356,13 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 		"Printing Attributs"
 		tabs := tabs + 1.
 		aClass attributes do: [ :attribute | 
-			self clone visit: attribute.
+			attribute accept: self clone.
 			currentStream << String crlf ].
 		self crlf.
 		"Printing Methods"
 		aClass methods do: [ :method | 
 			self crlf.
-			self clone visit: method.
+			method accept: self clone.
 			self crlf ].
 		"Closing Class"
 		currentStream
@@ -408,7 +405,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				<<< '('.
 			(aMethod parameters sorted: [ :p :p2 | 
 				 p sourceAnchor startPos < p2 sourceAnchor startPos ])
-				do: [ :parameter | self clone visit: parameter ]
+				do: [ :parameter | parameter accept: self clone  ]
 				separatedBy: [ self <<< ', ' ].
 			self <<< ')' ]
 		ifTrue: [ self << 'static' ].
@@ -435,18 +432,16 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				<< '}' ]
 ]
 
-{ #category : #accessing }
-FAMIX2JavaVisitor >> visitNamespace: aNamespace [
-	"create the folder for this namespace"
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 
-	aNamespace name = '<Default Package>'
-		ifFalse: [ aNamespace allParents reverse
-				do: [ :namespace | 
-					self rootFolder: self rootFolder / namespace name.
-					self rootFolder ensureCreateDirectory ].
-			self rootFolder: self rootFolder / aNamespace name.
+	aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
+		aFamixJavaPackage allParents reverse do: [ :namespace | 
+			self rootFolder: self rootFolder / namespace name.
 			self rootFolder ensureCreateDirectory ].
-	aNamespace children do: [ :child | self clone visit: child ]
+		self rootFolder: self rootFolder / aFamixJavaPackage name.
+		self rootFolder ensureCreateDirectory ].
+	aFamixJavaPackage children do: [ :child | child accept: self clone ]
 ]
 
 { #category : #generated }
