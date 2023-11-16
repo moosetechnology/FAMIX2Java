@@ -120,7 +120,7 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 			                 ((dType isKindOf: FamixJavaType) and: [ 
 				                  dType isAnonymousClass ]) or: [ 
 				                 dType name = '?' ] ] ].
-	^ declaredTypes
+	^ declaredTypes reject: #isAnonymousClass. 
 ]
 
 { #category : #'private-exporting' }
@@ -198,6 +198,9 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 FAMIX2JavaVisitor >> printImports: aClass [
 	| declaredTypes annotationTypes |
 	declaredTypes := self extractDeclaredTypesFor: aClass.
+	declaredTypes := declaredTypes select: [ :type | 
+		((type allAtScope: FamixJavaClass) noneSatisfy: #isAnonymousClass)
+		 ].
 	self printImportsDeclaredTypes: declaredTypes. 
 	"fetching annotation imports"
 	annotationTypes := self extractAnnotationTypesFor: aClass.
@@ -339,7 +342,8 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 			self crlf ].
 		"Printing class annotations"
 		aClass annotationInstances do: [ :annotationInstance | 
-			self clone visit: annotationInstance.
+		"	self clone visit: annotationInstance."
+			annotationInstance accept: self clone.
 			self crlf ].
 		"Printing Class declaration"
 		currentStream << 'public '.
@@ -458,7 +462,7 @@ FAMIX2JavaVisitor >> visitParameter: aParameter [
 FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
 	self <<< aParameterizableType name.
 	self <<< '<'.
-	aParameterizableType arguments
+	aParameterizableType argumentsInParameterizedTypes 
 		do: [ :argument | 
 			argument isParameterType
 				ifTrue: [ self visitParameterizableType: argument ]
