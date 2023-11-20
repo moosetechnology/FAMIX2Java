@@ -16,7 +16,8 @@ Class {
 		'rootFolder',
 		'tabs',
 		'tabulationSize',
-		'endOfLine'
+		'endOfLine',
+		'exportFolder'
 	],
 	#category : #Famix2Java
 }
@@ -73,6 +74,16 @@ FAMIX2JavaVisitor >> eol [
 FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
 	aFAMIXCompatibilityModel allModelPackages
 		do: [ :package | package accept: self clone ]
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> exportFolder [
+	^ exportFolder
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> exportFolder: aFileReference [ 
+	exportFolder := aFileReference
 ]
 
 { #category : #printing }
@@ -348,7 +359,7 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 		"Printing Class declaration"
 		currentStream << 'public '.
 		aClass isInterface
-			ifTrue: [ currentStream << 'interface ' ]
+			ifTrue: [ 1 halt. currentStream << 'interface ' ]
 			ifFalse: [ currentStream << 'class ' ].
 		currentStream << aClass name.
 		"printing inheritance and implementation"
@@ -438,14 +449,33 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 
 { #category : #visiting }
 FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
+|path clone |
 
+path := '' asFileReference .
+path := self exportFolder.
+aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
+   
+    aFamixJavaPackage allParents reverse do: [ :namespace | 
+        path := path / namespace name.
+    ].
+    path := path / aFamixJavaPackage name.
+  path ensureCreateDirectory.
+   " Counting occurrences of 'fr'"
+    self haltIf: [(path pathSegments occurrencesOf: 'fr') = 2] .
+].
+clone := (self clone).
+clone rootFolder: path.
+ 
+aFamixJavaPackage children do: [ :child | self haltIf: [aFamixJavaPackage name = 'bureau' ].child accept: clone ]
+
+"
 	aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
 		aFamixJavaPackage allParents reverse do: [ :namespace | 
 			self rootFolder: self rootFolder / namespace name.
 			self rootFolder ensureCreateDirectory ].
 		self rootFolder: self rootFolder / aFamixJavaPackage name.
 		self rootFolder ensureCreateDirectory ].
-	aFamixJavaPackage children do: [ :child | child accept: self clone ]
+	aFamixJavaPackage children do: [ :child | child accept: self clone ]"
 ]
 
 { #category : #generated }
