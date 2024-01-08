@@ -266,6 +266,18 @@ FAMIX2JavaVisitor >> printMethodAnnotations: aMethod [
 		self eol ]
 ]
 
+{ #category : #printing }
+FAMIX2JavaVisitor >> printVisibility: aFamixEntity [
+"print the visibility argument for Class, Interface and Enum"
+
+|visibility|
+	visibility := ''.
+		aFamixEntity isPublic ifTrue: [ visibility :=  'public '. ].
+		aFamixEntity isProtected ifTrue: [ visibility :=  'protected '. ].
+		aFamixEntity isPrivate ifTrue: [ visibility :=  'private '. ].
+		^ visibility 
+]
+
 { #category : #accessing }
 FAMIX2JavaVisitor >> reset [
 	tabs := 0.
@@ -373,10 +385,8 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 			annotationInstance accept: self clone.
 			self crlf ].
 		"Printing Class declaration"
-		currentStream << 'public '.
-		aClass isInterface
-			ifTrue: [ self flag: 'No interface should be found here ! refactor the code to delete this condition (used visitInterface instead)'  . currentStream  << 'interface ' ]
-			ifFalse: [ currentStream << 'class ' ].
+		currentStream << (self printVisibility: aClass).
+		currentStream << 'class '.
 		currentStream << aClass name.
 		"printing inheritance and implementation"
 		self printExtends: aClass.
@@ -404,6 +414,60 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 { #category : #generated }
 FAMIX2JavaVisitor >> visitEntity: aEntity [
 	"do nothing if unknow"
+]
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitEnum: aFamixJavaEnum [
+	
+	| file |
+	file := self generateExportFileFor: aFamixJavaEnum.
+
+
+	
+	file deleteIfAbsent: [  ].
+	file writeStreamDo: [ :stream | 
+		currentStream := stream.
+		"Printing class package and imports if the class is not an inner class"
+		(aFamixJavaEnum typeContainer isNotNil and: [ 
+			 aFamixJavaEnum typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [ 
+			self << 'package '.
+			aFamixJavaEnum typeContainer fullNamePrintOn: currentStream.
+			self
+				<<< ';';
+				crlf;
+				crlf.
+			self printImports: aFamixJavaEnum.
+			self crlf ].
+		"Printing class annotations"
+		aFamixJavaEnum annotationInstances do: [ :annotationInstance | 
+		"	self clone visit: annotationInstance."
+			annotationInstance accept: self clone.
+			self crlf ].
+		"Printing Enum declaration"
+		currentStream << (self printVisibility: aFamixJavaEnum).
+		currentStream << 'enum '.
+		currentStream << aFamixJavaEnum name.
+		"printing inheritance and implementation"
+		self printExtends: aFamixJavaEnum.
+		self printImplements: aFamixJavaEnum.
+		currentStream
+			<< ' {';
+			<< String crlf.
+		"Printing Attributs"
+		tabs := tabs + 1.
+		aFamixJavaEnum attributes do: [ :attribute | 
+			attribute accept: self clone.
+			currentStream << String crlf ].
+		self crlf.
+		"Printing Methods"
+		aFamixJavaEnum methods do: [ :method | 
+			self crlf.
+			method accept: self clone.
+			self crlf ].
+		"Closing Class"
+		currentStream
+			<< String crlf;
+			<< '}' ]
 ]
 
 { #category : #visiting }
@@ -440,10 +504,8 @@ FAMIX2JavaVisitor >> visitInterface: aFamixJavaInterface [
 			annotationInstance accept: self clone.
 			self crlf ].
 		"Printing Class declaration"
-		currentStream << 'public '.
-		aFamixJavaInterface isInterface
-			ifTrue: [ currentStream << 'interface ' ]
-			ifFalse: [ currentStream << 'class ' ].
+		currentStream << (self printVisibility: aFamixJavaInterface).
+		currentStream << 'interface '.
 		currentStream << aFamixJavaInterface name.
 		"printing inheritance and implementation"
 		self printExtends: aFamixJavaInterface.
@@ -482,9 +544,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				<< modifier;
 				space ]."
 	self indent.
-	aMethod isPrivate ifTrue: [ self <<< 'private ' ].
-	aMethod isProtected ifTrue: [ self <<< 'protected ' ].
-	aMethod isPublic ifTrue: [ self <<< 'public ' ].
+	self <<< (self printVisibility: aMethod).
 	aMethod isClassSide ifTrue: [ self <<< 'static ' ].
 	"Printing return type for method"
 	aMethod declaredType ifNotNil: [ :declaredType | 
