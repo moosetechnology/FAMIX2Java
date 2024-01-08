@@ -134,6 +134,18 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 	^ declaredTypes reject: #isAnonymousClass. 
 ]
 
+{ #category : #'as yet unclassified' }
+FAMIX2JavaVisitor >> generateExportFileFor: aClassOrInterface [
+	|file originFile| 
+	file := self rootFolder / (aClassOrInterface name , '.java').
+	originFile := aClassOrInterface sourceAnchor fileName asFileReference.
+	
+	originFile := #/ join: (originFile pathSegments copyFrom: 2 to: originFile pathSegments size) .
+	file := (self exportFolder) / originFile .
+	file ensureCreateFile .
+	^file. 
+]
+
 { #category : #'private-exporting' }
 FAMIX2JavaVisitor >> indent [
 	tabs * tabulationSize timesRepeat: [ currentStream << String space ].
@@ -188,21 +200,24 @@ FAMIX2JavaVisitor >> printExtends: aClass [
 
 { #category : #printing }
 FAMIX2JavaVisitor >> printImplements: aClass [
+
 	"Prints the implementation of interfaces in a class."
 
 	| interfaces |
 	"aClass name = 'AbstractActionBean'
 		ifTrue: [ 1 halt ]."
 	interfaces := OrderedCollection new.
-	interfaces addAll: (aClass superInheritances select: [ :inheritances | inheritances target isInterface ]).
-	interfaces isNotEmpty
-		ifTrue: [ self
-				<<< ' implements ';
-				<<< interfaces first target name ].
+	interfaces addAll:
+		(aClass superInheritances select: [ :inheritances | 
+			 inheritances target isInterface ]).
+	interfaces isNotEmpty ifTrue: [ 
+		self
+			<<< ' implements ';
+			<<< interfaces first target name ].
 	2 to: interfaces size do: [ :index | 
 		self
 			<<< ', ';
-			<<< (interfaces at: index) to name ]
+			<<< (interfaces at: index) target name ]
 ]
 
 { #category : #printing }
@@ -335,8 +350,9 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitClass: aClass [
 
-	| file |
-	file := self rootFolder / (aClass name , '.java').
+	| file  |
+	file := self generateExportFileFor: aClass.
+
 	file deleteIfAbsent: [  ].
 	file writeStreamDo: [ :stream | 
 		currentStream := stream.
@@ -359,7 +375,7 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 		"Printing Class declaration"
 		currentStream << 'public '.
 		aClass isInterface
-			ifTrue: [ 1 halt. currentStream << 'interface ' ]
+			ifTrue: [ self flag: 'No interface should be found here ! refactor the code to delete this condition (used visitInterface instead)'  . currentStream  << 'interface ' ]
 			ifFalse: [ currentStream << 'class ' ].
 		currentStream << aClass name.
 		"printing inheritance and implementation"
@@ -390,9 +406,72 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 	"do nothing if unknow"
 ]
 
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitException: aFamixJavaException [
+
+	self visitClass: aFamixJavaException.
+]
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitInterface: aFamixJavaInterface [
+	
+	| file |
+	file := self generateExportFileFor: aFamixJavaInterface.
+
+	"self haltIf: [aFamixJavaInterface name = 'AdresseIntf']."
+	
+	file deleteIfAbsent: [  ].
+	file writeStreamDo: [ :stream | 
+		currentStream := stream.
+		"Printing class package and imports if the class is not an inner class"
+		(aFamixJavaInterface typeContainer isNotNil and: [ 
+			 aFamixJavaInterface typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [ 
+			self << 'package '.
+			aFamixJavaInterface typeContainer fullNamePrintOn: currentStream.
+			self
+				<<< ';';
+				crlf;
+				crlf.
+			self printImports: aFamixJavaInterface.
+			self crlf ].
+		"Printing class annotations"
+		aFamixJavaInterface annotationInstances do: [ :annotationInstance | 
+		"	self clone visit: annotationInstance."
+			annotationInstance accept: self clone.
+			self crlf ].
+		"Printing Class declaration"
+		currentStream << 'public '.
+		aFamixJavaInterface isInterface
+			ifTrue: [ currentStream << 'interface ' ]
+			ifFalse: [ currentStream << 'class ' ].
+		currentStream << aFamixJavaInterface name.
+		"printing inheritance and implementation"
+		self printExtends: aFamixJavaInterface.
+		self printImplements: aFamixJavaInterface.
+		currentStream
+			<< ' {';
+			<< String crlf.
+		"Printing Attributs"
+		tabs := tabs + 1.
+		aFamixJavaInterface attributes do: [ :attribute | 
+			attribute accept: self clone.
+			currentStream << String crlf ].
+		self crlf.
+		"Printing Methods"
+		aFamixJavaInterface methods do: [ :method | 
+			self crlf.
+			method accept: self clone.
+			self crlf ].
+		"Closing Class"
+		currentStream
+			<< String crlf;
+			<< '}' ]
+]
+
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitMethod: aMethod [
-
+	|class|
+	
 	aMethod isStub ifTrue: [ ^ self ].
 	"Printing method annotations"
 	self printMethodAnnotations: aMethod.
@@ -434,8 +513,10 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				do: [ :exception | self <<< exception name ]
 				separatedBy: [ self <<< ', ' ] ].
 
+
+	class := (aMethod atScope: FamixTClass).
 	"Printing body of method if class is not abstract or an interface"
-	((aMethod atScope: FamixTClass) anyOne isInterface or: [ 
+	((class ifEmpty: [ true ] ifNotEmpty: [ class anyOne isInterface  ] ) or: [ 
 		 aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
 		ifFalse: [ 
@@ -461,12 +542,12 @@ aFamixJavaPackage name = '<Default Package>' ifFalse: [
     path := path / aFamixJavaPackage name.
   path ensureCreateDirectory.
    " Counting occurrences of 'fr'"
-    self haltIf: [(path pathSegments occurrencesOf: 'fr') = 2] .
+   " self haltIf: [(path pathSegments occurrencesOf: 'fr') = 2] ."
 ].
 clone := (self clone).
 clone rootFolder: path.
  
-aFamixJavaPackage children do: [ :child | self haltIf: [aFamixJavaPackage name = 'bureau' ].child accept: clone ]
+((aFamixJavaPackage children) select: [ :child | child isStub not. ] )do: [ :child | child accept: clone ].
 
 "
 	aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
@@ -480,12 +561,26 @@ aFamixJavaPackage children do: [ :child | self haltIf: [aFamixJavaPackage name =
 
 { #category : #generated }
 FAMIX2JavaVisitor >> visitParameter: aParameter [
-	aParameter declaredType isParameterizedType
+
+	(aParameter sourceText isNotNil and: [ aParameter sourceText isNotEmpty  ] )ifTrue: [ 
+		self <<< aParameter sourceText.
+		 ]
+	ifFalse: [ 
+		self flag: [ 'BUG: in some case declaredType is nil, so printing is impossible.' ].
+		aParameter isFinal ifTrue: [ 
+			self <<< 'final'.
+			 ].
+		(aParameter hasDeclaredType and: [ aParameter declaredType isParameterizedType ] )
 		ifTrue: [ self visitParameterizableType: aParameter declaredType ]
-		ifFalse: [ self <<< aParameter declaredType name ].
+		ifFalse: [ 
+			self <<< aParameter declaredType name 
+			].
 	self
 		space;
 		<<< aParameter name
+		 ]
+
+	
 ]
 
 { #category : #generated }

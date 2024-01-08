@@ -38,10 +38,13 @@ Famix2JavaExporter >> export [
 		
 		dic := preExporter resolvePackagepaths .
 		
-		(dic at: name) do: [ :pkg |
+		dic at: name ifPresent: [ 
+			(dic at: name )do: [ :pkg |
 			
 			visitor visitPackage: pkg. 
 			 ].	
+			
+			 ] 
 		 ].
 	
 ]
