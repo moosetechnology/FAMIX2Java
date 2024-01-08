@@ -135,12 +135,16 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 ]
 
 { #category : #'as yet unclassified' }
-FAMIX2JavaVisitor >> generateExportFileFor: aClassOrInterface [
-	|file originFile| 
-	file := self rootFolder / (aClassOrInterface name , '.java').
-	originFile := aClassOrInterface sourceAnchor fileName asFileReference.
+FAMIX2JavaVisitor >> generateExportFileFor: aClassOrInterfaceOrEnum [
+	"Copy the same file structure of the original source anchor and export it to the new exportPath"
 	
-	originFile := #/ join: (originFile pathSegments copyFrom: 2 to: originFile pathSegments size) .
+	|file originFile| 
+	
+	"file := self rootFolder / (aClassOrInterfaceOrEnum name , '.java')."
+	"1 halt. "
+	originFile := aClassOrInterfaceOrEnum sourceAnchor fileName asFileReference.
+	
+	originFile := #/ join: (originFile pathSegments copyFrom: 1 to: originFile pathSegments size) .
 	file := (self exportFolder) / originFile .
 	file ensureCreateFile .
 	^file. 
@@ -594,16 +598,19 @@ FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 
 path := '' asFileReference .
 path := self exportFolder.
-aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
+
+self flag: 'WARNING : we cant reproduce the package file structure only from the packageJavaEntities since it does not store the original source anchor'.
+
+"aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
    
     aFamixJavaPackage allParents reverse do: [ :namespace | 
         path := path / namespace name.
     ].
     path := path / aFamixJavaPackage name.
   path ensureCreateDirectory.
-   " Counting occurrences of 'fr'"
-   " self haltIf: [(path pathSegments occurrencesOf: 'fr') = 2] ."
-].
+   "" Counting occurrences of 'fr'""
+   "" self haltIf: [(path pathSegments occurrencesOf: 'fr') = 2] .""
+]."
 clone := (self clone).
 clone rootFolder: path.
  
