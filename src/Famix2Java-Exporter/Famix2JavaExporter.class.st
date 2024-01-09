@@ -2,54 +2,44 @@ Class {
 	#name : #Famix2JavaExporter,
 	#superclass : #Object,
 	#instVars : [
-		'preExporter',
-		'destPath',
-		'visitor'
+		'destinationPath',
+		'visitor',
+		'model'
 	],
 	#category : #'Famix2Java-Exporter'
 }
 
-{ #category : #setter }
-Famix2JavaExporter >> destination: aString [ 
-	destPath := aString.
+{ #category : #accessing }
+Famix2JavaExporter >> destinationPath [
+
+	^ destinationPath
 ]
 
-{ #category : #public }
-Famix2JavaExporter >> export [
-	
-	
+{ #category : #accessing }
+Famix2JavaExporter >> destinationPath: anObject [
+
+	destinationPath := anObject
+]
+
+{ #category : #initialization }
+Famix2JavaExporter >> initialize [ 
+
 	visitor := FAMIX2JavaVisitor new.
 	visitor endOfLine: String cr.
+	visitor exportFolder: destinationPath asFileReference.
+	visitor rootFolder: destinationPath asFileReference .
 	
-"	1 halt.
-	preExporter searchAPackageNamed: 'bureau'.
-	visitor visitPackage: (preExporter searchAPackageNamed: 'bureau') anyOne."
+	model := MooseModel root at: 1. 
+	
+	visitor export: model.
+		
 	
 	
-	
-	preExporter projectPaths do: [ :prjt |
-		|name prjtPath dic|
-		name := prjt key. 
-		prjtPath := prjt value. 
-		
-		
-		visitor exportFolder: destPath asFileReference / prjtPath .
-		visitor rootFolder: destPath asFileReference / prjtPath .
-		
-		dic := preExporter resolvePackagepaths .
-		
-		dic at: name ifPresent: [ 
-			(dic at: name )do: [ :pkg |
-			
-			visitor visitPackage: pkg. 
-			 ].	
-			
-			 ] 
-		 ].
 	
 ]
 
-{ #category : #setter }
-Famix2JavaExporter >> preExporter: aFamix2JavaPreExport [ 
-	preExporter := aFamix2JavaPreExport
+{ #category : #accessing }
+Famix2JavaExporter >> visitor [
+
+	^ visitor
 ]

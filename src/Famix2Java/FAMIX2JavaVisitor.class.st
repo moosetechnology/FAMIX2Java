@@ -140,8 +140,6 @@ FAMIX2JavaVisitor >> generateExportFileFor: aClassOrInterfaceOrEnum [
 	
 	|file originFile| 
 	
-	"file := self rootFolder / (aClassOrInterfaceOrEnum name , '.java')."
-	"1 halt. "
 	originFile := aClassOrInterfaceOrEnum sourceAnchor fileName asFileReference.
 	
 	originFile := #/ join: (originFile pathSegments copyFrom: 1 to: originFile pathSegments size) .
@@ -367,6 +365,9 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 FAMIX2JavaVisitor >> visitClass: aClass [
 
 	| file  |
+	
+	
+	
 	file := self generateExportFileFor: aClass.
 
 	file deleteIfAbsent: [  ].
