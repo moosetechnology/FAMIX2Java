@@ -16,7 +16,8 @@ Class {
 		'rootFolder',
 		'tabs',
 		'tabulationSize',
-		'endOfLine'
+		'endOfLine',
+		'exportFolder'
 	],
 	#category : #Famix2Java
 }
@@ -75,6 +76,16 @@ FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
 		do: [ :package | package accept: self clone ]
 ]
 
+{ #category : #accessing }
+FAMIX2JavaVisitor >> exportFolder [
+	^ exportFolder
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> exportFolder: aFileReference [ 
+	exportFolder := aFileReference
+]
+
 { #category : #printing }
 FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 	| annotationInts |
@@ -120,7 +131,21 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 			                 ((dType isKindOf: FamixJavaType) and: [ 
 				                  dType isAnonymousClass ]) or: [ 
 				                 dType name = '?' ] ] ].
-	^ declaredTypes
+	^ declaredTypes reject: #isAnonymousClass. 
+]
+
+{ #category : #'as yet unclassified' }
+FAMIX2JavaVisitor >> generateExportFileFor: aClassOrInterfaceOrEnum [
+	"Copy the same file structure of the original source anchor and export it to the new exportPath"
+	
+	|file originFile| 
+	
+	originFile := aClassOrInterfaceOrEnum sourceAnchor fileName asFileReference.
+	
+	originFile := #/ join: (originFile pathSegments copyFrom: 1 to: originFile pathSegments size) .
+	file := (self exportFolder) / originFile .
+	file ensureCreateFile .
+	^file. 
 ]
 
 { #category : #'private-exporting' }
@@ -177,27 +202,33 @@ FAMIX2JavaVisitor >> printExtends: aClass [
 
 { #category : #printing }
 FAMIX2JavaVisitor >> printImplements: aClass [
+
 	"Prints the implementation of interfaces in a class."
 
 	| interfaces |
 	"aClass name = 'AbstractActionBean'
 		ifTrue: [ 1 halt ]."
 	interfaces := OrderedCollection new.
-	interfaces addAll: (aClass superInheritances select: [ :inheritances | inheritances target isInterface ]).
-	interfaces isNotEmpty
-		ifTrue: [ self
-				<<< ' implements ';
-				<<< interfaces first target name ].
+	interfaces addAll:
+		(aClass superInheritances select: [ :inheritances | 
+			 inheritances target isInterface ]).
+	interfaces isNotEmpty ifTrue: [ 
+		self
+			<<< ' implements ';
+			<<< interfaces first target name ].
 	2 to: interfaces size do: [ :index | 
 		self
 			<<< ', ';
-			<<< (interfaces at: index) to name ]
+			<<< (interfaces at: index) target name ]
 ]
 
 { #category : #printing }
 FAMIX2JavaVisitor >> printImports: aClass [
 	| declaredTypes annotationTypes |
 	declaredTypes := self extractDeclaredTypesFor: aClass.
+	declaredTypes := declaredTypes select: [ :type | 
+		((type allAtScope: FamixJavaClass) noneSatisfy: #isAnonymousClass)
+		 ].
 	self printImportsDeclaredTypes: declaredTypes. 
 	"fetching annotation imports"
 	annotationTypes := self extractAnnotationTypesFor: aClass.
@@ -235,6 +266,18 @@ FAMIX2JavaVisitor >> printMethodAnnotations: aMethod [
 	aMethod annotationInstances do: [ :annotationInstance | 
 		annotationInstance accept: self clone.
 		self eol ]
+]
+
+{ #category : #printing }
+FAMIX2JavaVisitor >> printVisibility: aFamixEntity [
+"print the visibility argument for Class, Interface and Enum"
+
+|visibility|
+	visibility := ''.
+		aFamixEntity isPublic ifTrue: [ visibility :=  'public '. ].
+		aFamixEntity isProtected ifTrue: [ visibility :=  'protected '. ].
+		aFamixEntity isPrivate ifTrue: [ visibility :=  'private '. ].
+		^ visibility 
 ]
 
 { #category : #accessing }
@@ -321,8 +364,12 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitClass: aClass [
 
-	| file |
-	file := self rootFolder / (aClass name , '.java').
+	| file  |
+	
+	
+	
+	file := self generateExportFileFor: aClass.
+
 	file deleteIfAbsent: [  ].
 	file writeStreamDo: [ :stream | 
 		currentStream := stream.
@@ -339,13 +386,12 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 			self crlf ].
 		"Printing class annotations"
 		aClass annotationInstances do: [ :annotationInstance | 
-			self clone visit: annotationInstance.
+		"	self clone visit: annotationInstance."
+			annotationInstance accept: self clone.
 			self crlf ].
 		"Printing Class declaration"
-		currentStream << 'public '.
-		aClass isInterface
-			ifTrue: [ currentStream << 'interface ' ]
-			ifFalse: [ currentStream << 'class ' ].
+		currentStream << (self printVisibility: aClass).
+		currentStream << 'class '.
 		currentStream << aClass name.
 		"printing inheritance and implementation"
 		self printExtends: aClass.
@@ -375,9 +421,124 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 	"do nothing if unknow"
 ]
 
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitEnum: aFamixJavaEnum [
+	
+	| file |
+	file := self generateExportFileFor: aFamixJavaEnum.
+
+
+	
+	file deleteIfAbsent: [  ].
+	file writeStreamDo: [ :stream | 
+		currentStream := stream.
+		"Printing class package and imports if the class is not an inner class"
+		(aFamixJavaEnum typeContainer isNotNil and: [ 
+			 aFamixJavaEnum typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [ 
+			self << 'package '.
+			aFamixJavaEnum typeContainer fullNamePrintOn: currentStream.
+			self
+				<<< ';';
+				crlf;
+				crlf.
+			self printImports: aFamixJavaEnum.
+			self crlf ].
+		"Printing class annotations"
+		aFamixJavaEnum annotationInstances do: [ :annotationInstance | 
+		"	self clone visit: annotationInstance."
+			annotationInstance accept: self clone.
+			self crlf ].
+		"Printing Enum declaration"
+		currentStream << (self printVisibility: aFamixJavaEnum).
+		currentStream << 'enum '.
+		currentStream << aFamixJavaEnum name.
+		"printing inheritance and implementation"
+		self printExtends: aFamixJavaEnum.
+		self printImplements: aFamixJavaEnum.
+		currentStream
+			<< ' {';
+			<< String crlf.
+		"Printing Attributs"
+		tabs := tabs + 1.
+		aFamixJavaEnum attributes do: [ :attribute | 
+			attribute accept: self clone.
+			currentStream << String crlf ].
+		self crlf.
+		"Printing Methods"
+		aFamixJavaEnum methods do: [ :method | 
+			self crlf.
+			method accept: self clone.
+			self crlf ].
+		"Closing Class"
+		currentStream
+			<< String crlf;
+			<< '}' ]
+]
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitException: aFamixJavaException [
+
+	self visitClass: aFamixJavaException.
+]
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitInterface: aFamixJavaInterface [
+	
+	| file |
+	file := self generateExportFileFor: aFamixJavaInterface.
+
+	"self haltIf: [aFamixJavaInterface name = 'AdresseIntf']."
+	
+	file deleteIfAbsent: [  ].
+	file writeStreamDo: [ :stream | 
+		currentStream := stream.
+		"Printing class package and imports if the class is not an inner class"
+		(aFamixJavaInterface typeContainer isNotNil and: [ 
+			 aFamixJavaInterface typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [ 
+			self << 'package '.
+			aFamixJavaInterface typeContainer fullNamePrintOn: currentStream.
+			self
+				<<< ';';
+				crlf;
+				crlf.
+			self printImports: aFamixJavaInterface.
+			self crlf ].
+		"Printing class annotations"
+		aFamixJavaInterface annotationInstances do: [ :annotationInstance | 
+		"	self clone visit: annotationInstance."
+			annotationInstance accept: self clone.
+			self crlf ].
+		"Printing Class declaration"
+		currentStream << (self printVisibility: aFamixJavaInterface).
+		currentStream << 'interface '.
+		currentStream << aFamixJavaInterface name.
+		"printing inheritance and implementation"
+		self printExtends: aFamixJavaInterface.
+		self printImplements: aFamixJavaInterface.
+		currentStream
+			<< ' {';
+			<< String crlf.
+		"Printing Attributs"
+		tabs := tabs + 1.
+		aFamixJavaInterface attributes do: [ :attribute | 
+			attribute accept: self clone.
+			currentStream << String crlf ].
+		self crlf.
+		"Printing Methods"
+		aFamixJavaInterface methods do: [ :method | 
+			self crlf.
+			method accept: self clone.
+			self crlf ].
+		"Closing Class"
+		currentStream
+			<< String crlf;
+			<< '}' ]
+]
+
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitMethod: aMethod [
-
+	|class|
+	
 	aMethod isStub ifTrue: [ ^ self ].
 	"Printing method annotations"
 	self printMethodAnnotations: aMethod.
@@ -388,9 +549,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				<< modifier;
 				space ]."
 	self indent.
-	aMethod isPrivate ifTrue: [ self <<< 'private ' ].
-	aMethod isProtected ifTrue: [ self <<< 'protected ' ].
-	aMethod isPublic ifTrue: [ self <<< 'public ' ].
+	self <<< (self printVisibility: aMethod).
 	aMethod isClassSide ifTrue: [ self <<< 'static ' ].
 	"Printing return type for method"
 	aMethod declaredType ifNotNil: [ :declaredType | 
@@ -419,8 +578,10 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				do: [ :exception | self <<< exception name ]
 				separatedBy: [ self <<< ', ' ] ].
 
+
+	class := (aMethod atScope: FamixTClass).
 	"Printing body of method if class is not abstract or an interface"
-	((aMethod atScope: FamixTClass) anyOne isInterface or: [ 
+	((class ifEmpty: [ true ] ifNotEmpty: [ class anyOne isInterface  ] ) or: [ 
 		 aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self <<< ';' ]
 		ifFalse: [ 
@@ -434,31 +595,67 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 
 { #category : #visiting }
 FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
+|path clone |
 
+path := '' asFileReference .
+path := self exportFolder.
+
+self flag: 'WARNING : we cant reproduce the package file structure only from the packageJavaEntities since it does not store the original source anchor'.
+
+"aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
+   
+    aFamixJavaPackage allParents reverse do: [ :namespace | 
+        path := path / namespace name.
+    ].
+    path := path / aFamixJavaPackage name.
+  path ensureCreateDirectory.
+   "" Counting occurrences of 'fr'""
+   "" self haltIf: [(path pathSegments occurrencesOf: 'fr') = 2] .""
+]."
+clone := (self clone).
+clone rootFolder: path.
+ 
+((aFamixJavaPackage children) select: [ :child | child isStub not. ] )do: [ :child | child accept: clone ].
+
+"
 	aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
 		aFamixJavaPackage allParents reverse do: [ :namespace | 
 			self rootFolder: self rootFolder / namespace name.
 			self rootFolder ensureCreateDirectory ].
 		self rootFolder: self rootFolder / aFamixJavaPackage name.
 		self rootFolder ensureCreateDirectory ].
-	aFamixJavaPackage children do: [ :child | child accept: self clone ]
+	aFamixJavaPackage children do: [ :child | child accept: self clone ]"
 ]
 
 { #category : #generated }
 FAMIX2JavaVisitor >> visitParameter: aParameter [
-	aParameter declaredType isParameterizedType
+
+	(aParameter sourceText isNotNil and: [ aParameter sourceText isNotEmpty  ] )ifTrue: [ 
+		self <<< aParameter sourceText.
+		 ]
+	ifFalse: [ 
+		self flag: [ 'BUG: in some case declaredType is nil, so printing is impossible.' ].
+		aParameter isFinal ifTrue: [ 
+			self <<< 'final'.
+			 ].
+		(aParameter hasDeclaredType and: [ aParameter declaredType isParameterizedType ] )
 		ifTrue: [ self visitParameterizableType: aParameter declaredType ]
-		ifFalse: [ self <<< aParameter declaredType name ].
+		ifFalse: [ 
+			self <<< aParameter declaredType name 
+			].
 	self
 		space;
 		<<< aParameter name
+		 ]
+
+	
 ]
 
 { #category : #generated }
 FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
 	self <<< aParameterizableType name.
 	self <<< '<'.
-	aParameterizableType arguments
+	aParameterizableType argumentsInParameterizedTypes 
 		do: [ :argument | 
 			argument isParameterType
 				ifTrue: [ self visitParameterizableType: argument ]

@@ -18,6 +18,60 @@ FAMIX2JavaVisitorTest >> setUp [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testCompareFileStructureSimilarity [
+
+	|exported original paths exportPath originPath|
+	
+	"give the absolute path of the exported folder and the original folder"
+	exportPath := ''.
+	originPath := ''.
+	
+	exported := exportPath
+		            asFileReference allChildrenMatching: '*.java'.
+	original := originPath
+		            asFileReference allChildrenMatching: '*.java'.
+		
+	
+	paths := Dictionary new. 
+	
+	exported := exported collect: [ :path | 
+		              | relatif |
+		              
+		              relatif := path pathSegments
+			                         copyFrom:
+			                         (path pathSegments indexOf:
+				                          'legacy-ecompta')
+			                         to: path pathSegments size.
+						relatif := ('/' join: relatif) asFileReference .
+						
+"						self haltIf: [ path asString = 'File @ /Users/nicolashlad/Development/_temp/legacy-ecompta/client/src/main/java/fr/magnus/achats/transverse/FA_LI.java' ].
+						"
+						paths at: (relatif asFileReference) ifAbsentPut: [ Dictionary new add: ('EXP' -> relatif) ; yourself].
+		                 ].
+	
+	original := original collect: [ :path | 
+		              | relatif |
+
+						
+		              relatif := path pathSegments
+			                         copyFrom:
+			                         (path pathSegments indexOf:
+				                          'legacy-ecompta')
+			                         to: path pathSegments size.
+						relatif := ('/' join: relatif) asFileReference .
+						
+						
+		             paths at: (relatif asFileReference) ifPresent: [ :v |  v add: ('ORG' -> path) ] ifAbsentPut: [ Dictionary new add: ('ORG' -> relatif) ; yourself].
+						 ].
+
+	"paths	inspect."
+	
+	"possible test failure if original files have i) fully commented java file or ii) missing package-info.java in exported folder, sine they do not contain java code"
+	self assert: (paths associations select: [ :assoc | assoc value size = 1]) size equals: 0.
+
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitAttribute [
 
 	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
