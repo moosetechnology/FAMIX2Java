@@ -62,6 +62,37 @@ FAMIX2JavaVisitorTest >> testVisitBasicClass [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasOneInterface [
+
+	| model resultString aClass implementation anInterface |
+	model := FamixJavaModel new.
+	aClass := FamixJavaClass new
+		          name: 'DemoClass';
+		          yourself.
+	anInterface := FamixJavaInterface new
+		               name: 'DemoOneInterface';
+		               yourself.
+
+	implementation := FamixJavaImplementation new
+		               implementingClass: aClass;
+		               interface: anInterface;
+		               yourself.
+	model addAll: {
+			aClass.
+			anInterface.
+			implementation }.
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self
+		assert: resultString
+		equals: 'public class DemoClass implements DemoOneInterface {
+
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasSuperClass [
 
 	| model resultString aClass inheritance aSuperClass |
@@ -87,6 +118,48 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasSuperClass [
 	self
 		assert: resultString
 		equals: 'public class DemoClass extends DemoSuperClass {
+
+
+}'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasTwoInterfaces [
+
+	| model resultString aClass implementation anInterface anInterface2 implementation2 |
+	model := FamixJavaModel new.
+	aClass := FamixJavaClass new
+		          name: 'DemoClass';
+		          yourself.
+	anInterface := FamixJavaInterface new
+		               name: 'DemoOneInterface';
+		               yourself.
+	anInterface2 := FamixJavaInterface new
+		                name: 'DemoTwoInterface';
+		                yourself.
+
+
+	implementation := FamixJavaImplementation new
+		                  implementingClass: aClass;
+		                  interface: anInterface;
+		                  yourself.
+	implementation2 := FamixJavaImplementation new
+		                   implementingClass: aClass;
+		                   interface: anInterface2;
+		                   yourself.
+	model addAll: {
+			aClass.
+			anInterface.
+			anInterface2.
+			implementation.
+			implementation2 }.
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self
+		assert: resultString
+		equals:
+			'public class DemoClass implements DemoOneInterface, DemoTwoInterface {
 
 
 }'

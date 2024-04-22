@@ -179,18 +179,13 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 	"Prints the implementation of interfaces in a class."
 
 	| interfaces |
-	"aClass name = 'AbstractActionBean'
-		ifTrue: [ 1 halt ]."
-	interfaces := OrderedCollection new.
-	interfaces addAll: (aClass superInheritances select: [ :inheritances | inheritances target isInterface ]).
-	interfaces isNotEmpty
-		ifTrue: [ self
-				<<< ' implements ';
-				<<< interfaces first target name ].
-	2 to: interfaces size do: [ :index | 
-		self
-			<<< ', ';
-			<<< (interfaces at: index) to name ]
+
+	interfaces := aClass interfaceImplementations.
+	interfaces ifNotEmpty: [ :implementations |
+		self <<< ' implements '.
+		implementations
+			do: [ :implementation | self <<< implementation interface name ]
+			separatedBy: [ self <<< ', ' ] ]
 ]
 
 { #category : #printing }
