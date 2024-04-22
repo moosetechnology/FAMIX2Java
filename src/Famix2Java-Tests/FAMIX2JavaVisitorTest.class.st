@@ -43,6 +43,25 @@ FAMIX2JavaVisitorTest >> testVisitAttribute [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitBasicClass [
+
+	| model resultString aClass |
+	model := FamixJavaModel new.
+	aClass := FamixJavaClass new
+		          name: 'DemoClass';
+		          yourself.
+
+	model addAll: { aClass }.
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: 'public class DemoClass {
+
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
 	| method methodClass exception model resultString |

@@ -319,54 +319,47 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitClass: aClass [
+	"Printing class package and imports if the class is not an inner class"
 
-	| file |
-	file := self rootFolder / (aClass name , '.java').
-	file deleteIfAbsent: [  ].
-	file writeStreamDo: [ :stream | 
-		currentStream := stream.
-		"Printing class package and imports if the class is not an inner class"
-		(aClass typeContainer isNotNil and: [ 
-			 aClass typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [ 
-			self << 'package '.
-			aClass typeContainer fullNamePrintOn: currentStream.
-			self
-				<<< ';';
-				crlf;
-				crlf.
-			self printImports: aClass.
-			self crlf ].
-		"Printing class annotations"
-		aClass annotationInstances do: [ :annotationInstance | 
-			self clone visit: annotationInstance.
-			self crlf ].
-		"Printing Class declaration"
-		currentStream << 'public '.
-		aClass isInterface
-			ifTrue: [ currentStream << 'interface ' ]
-			ifFalse: [ currentStream << 'class ' ].
-		currentStream << aClass name.
-		"printing inheritance and implementation"
-		self printExtends: aClass.
-		self printImplements: aClass.
-		currentStream
-			<< ' {';
-			<< String crlf.
-		"Printing Attributs"
-		tabs := tabs + 1.
-		aClass attributes do: [ :attribute | 
-			attribute accept: self clone.
-			currentStream << String crlf ].
-		self crlf.
-		"Printing Methods"
-		aClass methods do: [ :method | 
-			self crlf.
-			method accept: self clone.
-			self crlf ].
-		"Closing Class"
-		currentStream
-			<< String crlf;
-			<< '}' ]
+	(aClass typeContainer isNotNil and: [
+		 aClass typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [
+		self << 'package '.
+		aClass typeContainer fullNamePrintOn: currentStream.
+		self
+			<<< ';';
+			eol;
+			eol.
+		self printImports: aClass.
+		self eol ].
+	"Printing class annotations"
+	aClass annotationInstances do: [ :annotationInstance |
+		self clone visit: annotationInstance.
+		self eol ].
+	"Printing Class declaration"
+	currentStream << 'public '.
+	aClass isInterface
+		ifTrue: [ currentStream << 'interface ' ]
+		ifFalse: [ currentStream << 'class ' ].
+	currentStream << aClass name.
+	"printing inheritance and implementation"
+	self printExtends: aClass.
+	self printImplements: aClass.
+	currentStream << ' {'.
+	self eol.
+	"Printing Attributs"
+	tabs := tabs + 1.
+	aClass attributes do: [ :attribute |
+		attribute accept: self clone.
+		self eol ].
+	self eol.
+	"Printing Methods"
+	aClass methods do: [ :method |
+		self eol.
+		method accept: self clone.
+		self eol ].
+	"Closing Class"
+	self eol.
+	currentStream << '}'
 ]
 
 { #category : #generated }
@@ -434,13 +427,22 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 { #category : #visiting }
 FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 
-	aFamixJavaPackage name = '<Default Package>' ifFalse: [ 
-		aFamixJavaPackage allParents reverse do: [ :namespace | 
+	aFamixJavaPackage name = '<Default Package>' ifFalse: [
+		aFamixJavaPackage allParents reverse do: [ :namespace |
 			self rootFolder: self rootFolder / namespace name.
 			self rootFolder ensureCreateDirectory ].
 		self rootFolder: self rootFolder / aFamixJavaPackage name.
 		self rootFolder ensureCreateDirectory ].
-	aFamixJavaPackage children do: [ :child | child accept: self clone ]
+	aFamixJavaPackage children do: [ :child |
+		child isPackage
+			ifTrue: [ child accept: self clone ]
+			ifFalse: [ "I am a class or interface, or anything else that will be a file"
+				| file |
+				file := self rootFolder / (child name , '.java').
+				file deleteIfAbsent: [  ].
+				file writeStreamDo: [ :stream |
+					currentStream := stream.
+					child accept: self clone ] ] ]
 ]
 
 { #category : #generated }
