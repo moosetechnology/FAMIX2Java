@@ -1,6 +1,7 @@
 # FamixJava2Java
 
 ![Moose 11](https://img.shields.io/badge/Moose-11-%23aac9ff.svg)
+[![Coverage Status](https://coveralls.io/repos/github/moosetechnology/FAMIX2Java/badge.svg?branch=v5)](https://coveralls.io/github/moosetechnology/FAMIX2Java?branch=v5)
 
 > If you need this project in Moose 10 - check branch v4
 
