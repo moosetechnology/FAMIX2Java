@@ -109,14 +109,13 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 		                  :element | 
 		                  element atAnyScope: { 
 				                  FamixTClass.
-				                  FamixTParameterizedType.
 				                  FamixTEnum } ]) asSet.
 	(declaredTypes select: [ :dType | 
-		 dType isKindOf: FamixJavaParameterizedType ]) do: [ 
+		 dType isParametricEntity ]) do: [ 
 		:parameterizedType | 
 		declaredTypes addAll: parameterizedType allParametrizedClasses ].
 	declaredTypes := declaredTypes reject: [ :dType | 
-		                 (dType isKindOf: FamixJavaParameterizedType) or: [ 
+		                 (dType isParametricEntity) or: [ 
 			                 ((dType isKindOf: FamixJavaType) and: [ 
 				                  dType isAnonymousClass ]) or: [ 
 				                 dType name = '?' ] ] ].
@@ -150,7 +149,7 @@ FAMIX2JavaVisitor >> initialize [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
-	aDeclaredType isParameterizedType
+	aDeclaredType isParametricEntity
 		ifFalse: [ currentStream << aDeclaredType name.
 			^ self].
 	currentStream
