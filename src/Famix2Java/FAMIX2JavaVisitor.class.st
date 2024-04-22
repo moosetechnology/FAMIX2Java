@@ -331,10 +331,7 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 		self clone visit: annotationInstance.
 		self eol ].
 	"Printing Class declaration"
-	currentStream << 'public '.
-	aClass isInterface
-		ifTrue: [ currentStream << 'interface ' ]
-		ifFalse: [ currentStream << 'class ' ].
+	currentStream << 'public class '.
 	currentStream << aClass name.
 	"printing inheritance and implementation"
 	self printExtends: aClass.
@@ -360,6 +357,47 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 { #category : #generated }
 FAMIX2JavaVisitor >> visitEntity: aEntity [
 	"do nothing if unknow"
+]
+
+{ #category : #accessing }
+FAMIX2JavaVisitor >> visitInterface: aClass [
+	"Printing class package and imports if the class is not an inner class"
+
+	(aClass typeContainer isNotNil and: [
+		 aClass typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [
+		self << 'package '.
+		aClass typeContainer fullNamePrintOn: currentStream.
+		self
+			<<< ';';
+			eol;
+			eol.
+		self printImports: aClass.
+		self eol ].
+	"Printing class annotations"
+	aClass annotationInstances do: [ :annotationInstance |
+		self clone visit: annotationInstance.
+		self eol ].
+	"Printing Class declaration"
+	currentStream << 'public interface '.
+	currentStream << aClass name.
+	"printing inheritance and implementation"
+	self printExtends: aClass.
+	currentStream << ' {'.
+	self eol.
+	"Printing Attributs"
+	tabs := tabs + 1.
+	aClass attributes do: [ :attribute |
+		attribute accept: self clone.
+		self eol ].
+	self eol.
+	"Printing Methods"
+	aClass methods do: [ :method |
+		self eol.
+		method accept: self clone.
+		self eol ].
+	"Closing Class"
+	self eol.
+	currentStream << '}'
 ]
 
 { #category : #accessing }

@@ -166,6 +166,25 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasTwoInterfaces [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitBasicInterface [
+
+	| model resultString aClass |
+	model := FamixJavaModel new.
+	aClass := FamixJavaInterface new
+		          name: 'DemoInterface';
+		          yourself.
+
+	model addAll: { aClass }.
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: 'public interface DemoInterface {
+
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
 	| method methodClass exception model resultString |
