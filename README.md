@@ -12,7 +12,7 @@ A visitor to export FamixJava model to Java code
 
 ```st
 Metacello new
-  githubUser: 'moosetechnology' project: 'FAMIX2Java' commitish: 'v4' path: 'src';
+  githubUser: 'moosetechnology' project: 'FAMIX2Java' commitish: 'v5' path: 'src';
   baseline: 'Famix2Java';
   load
 ```
