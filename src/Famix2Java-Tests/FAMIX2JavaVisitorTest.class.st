@@ -62,6 +62,37 @@ FAMIX2JavaVisitorTest >> testVisitBasicClass [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasSuperClass [
+
+	| model resultString aClass inheritance aSuperClass |
+	model := FamixJavaModel new.
+	aClass := FamixJavaClass new
+		          name: 'DemoClass';
+		          yourself.
+	aSuperClass := FamixJavaClass new
+		               name: 'DemoSuperClass';
+		               yourself.
+
+	inheritance := FamixJavaInheritance new
+		               subclass: aClass;
+		               superclass: aSuperClass;
+		               yourself.
+	model addAll: {
+			aClass.
+			aSuperClass.
+			inheritance }.
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self
+		assert: resultString
+		equals: 'public class DemoClass extends DemoSuperClass {
+
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
 	| method methodClass exception model resultString |
