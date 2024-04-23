@@ -18,6 +18,31 @@ FAMIX2JavaVisitorTest >> setUp [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testImportAttributeDeclaredTypeIfPossible [
+
+	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
+	model := FamixJavaModel new.
+	attributeDeclaredType := FamixJavaClass new.
+	attributeDeclaredType name: 'AttributeClass'.
+	attribute := FamixJavaAttribute new.
+	attribute name: 'anAttribute'.
+	attribute declaredType: attributeDeclaredType. 
+	sourceAnchor := FamixJavaSourceTextAnchor new.
+	sourceAnchor source: ''.
+	attribute sourceAnchor: sourceAnchor.
+	attributeClass := FamixJavaClass new.
+	attributeClass addAttribute: attribute.
+	model addAll: { 
+			attribute.
+			attributeClass.
+			sourceAnchor }.
+	resultString := String streamContents: [ :stream | 
+		                visitor currentStream: stream.
+		                attribute accept: visitor ].
+	self assert: resultString equals: 'AttributeClass anAttribute;'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitAttribute [
 
 	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
@@ -232,6 +257,52 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithThrownException [
 		                visitor currentStream: stream.
 		                method accept: visitor ].
 	self assert: resultString equals: 'aMethod() throws MyException {
+
+}'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitPrivateMethod [
+
+	| method methodClass model resultString |
+	model := FamixJavaModel new.
+	method := FamixJavaMethod new.
+	method isPrivate: true.
+	method name: 'aMethod'.
+
+
+	methodClass := FamixJavaClass new.
+	methodClass addMethod: method.
+	model addAll: { 
+			method.
+			methodClass }.
+	resultString := String streamContents: [ :stream | 
+		                visitor currentStream: stream.
+		                method accept: visitor ].
+	self assert: resultString equals: 'private aMethod() {
+
+}'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitStaticMethod [
+
+	| method methodClass model resultString |
+	model := FamixJavaModel new.
+	method := FamixJavaMethod new.
+	method isClassSide: true.
+	method name: 'aMethod'.
+
+
+	methodClass := FamixJavaClass new.
+	methodClass addMethod: method.
+	model addAll: { 
+			method.
+			methodClass }.
+	resultString := String streamContents: [ :stream | 
+		                visitor currentStream: stream.
+		                method accept: visitor ].
+	self assert: resultString equals: 'static aMethod() {
 
 }'
 ]
