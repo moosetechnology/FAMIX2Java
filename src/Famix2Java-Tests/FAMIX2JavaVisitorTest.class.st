@@ -285,6 +285,29 @@ FAMIX2JavaVisitorTest >> testVisitPrivateMethod [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitPublicMethod [
+
+	| method methodClass model resultString |
+	model := FamixJavaModel new.
+	method := FamixJavaMethod new.
+	method isPublic: true.
+	method name: 'aMethod'.
+
+
+	methodClass := FamixJavaClass new.
+	methodClass addMethod: method.
+	model addAll: { 
+			method.
+			methodClass }.
+	resultString := String streamContents: [ :stream | 
+		                visitor currentStream: stream.
+		                method accept: visitor ].
+	self assert: resultString equals: 'public aMethod() {
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitStaticMethod [
 
 	| method methodClass model resultString |
