@@ -210,6 +210,77 @@ FAMIX2JavaVisitorTest >> testVisitBasicInterface [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitClassWithDependencyAttribute [
+
+	| attribute attributeClass attributeDeclaredType packageFr sourceAnchor model resultString |
+	model := FamixJavaModel new.
+	packageFr := FamixJavaPackage new.
+	packageFr name: 'fr'.
+	attributeDeclaredType := FamixJavaClass new.
+	attributeDeclaredType name: 'AttributeClass'.
+	packageFr addType: attributeDeclaredType.
+	attribute := FamixJavaAttribute new.
+	attribute name: 'anAttribute'.
+	attribute declaredType: attributeDeclaredType.
+	sourceAnchor := FamixJavaSourceTextAnchor new.
+	sourceAnchor source: ''.
+	attribute sourceAnchor: sourceAnchor.
+	attributeClass := FamixJavaClass new.
+	attributeClass name: 'OwnerClass'.
+	attributeClass addAttribute: attribute.
+	model addAll: {
+			attribute.
+			attributeClass.
+			sourceAnchor.
+			packageFr }.
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                visitor printImports: attributeClass ].
+	self assert: resultString equals: 'import fr.AttributeClass;
+'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitClassWithDependencyAttributeAlsoStub [
+
+	| attributeClass attributeDeclaredType model resultString packageFr packageOrg attribute sourceAnchor |
+	"Create a dummy model"
+	model := FamixJavaModel new.
+	packageFr := FamixJavaPackage new.
+	packageFr name: 'fr'.
+	packageOrg := FamixJavaPackage new.
+	packageOrg name: 'org'.
+	attributeDeclaredType := FamixJavaClass new.
+	attributeDeclaredType isStub: true.
+	attributeDeclaredType name: 'AttributeClass'.
+	packageOrg addType: attributeDeclaredType.
+	packageOrg isStub: true.
+	attribute := FamixJavaAttribute new.
+	attribute name: 'anAttribute'.
+	attribute declaredType: attributeDeclaredType.
+	sourceAnchor := FamixJavaSourceTextAnchor new.
+	sourceAnchor source: ''.
+	attribute sourceAnchor: sourceAnchor.
+	attributeClass := FamixJavaClass new.
+	attributeClass name: 'OwnerClass'.
+	attributeClass addAttribute: attribute.
+	packageFr addType: attributeClass.
+	model addAll: {
+			attribute.
+			attributeClass.
+			sourceAnchor.
+			packageFr.
+			packageOrg }.
+
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                visitor printImports: attributeClass ].
+	self assert: resultString equals: 'import org.AttributeClass;
+'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
 	| method methodClass exception model resultString |
