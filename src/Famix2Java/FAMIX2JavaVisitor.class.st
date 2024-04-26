@@ -474,7 +474,7 @@ FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 
 { #category : #generated }
 FAMIX2JavaVisitor >> visitParameter: aParameter [
-	aParameter declaredType isParameterizedType
+	aParameter declaredType isParametricEntity
 		ifTrue: [ self visitParameterizableType: aParameter declaredType ]
 		ifFalse: [ self <<< aParameter declaredType name ].
 	self
