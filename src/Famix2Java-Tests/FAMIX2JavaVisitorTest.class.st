@@ -18,6 +18,51 @@ FAMIX2JavaVisitorTest >> setUp [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testDoNotExportPackageStub [
+
+	| model aClass orgPackage memory comStubPackage aStubClass |
+	model := FamixJavaModel new.
+	orgPackage := FamixJavaPackage new.
+	orgPackage name: 'org'.
+	aClass := FamixJavaClass new
+		          name: 'DemoClass';
+		          yourself.
+	orgPackage addType: aClass.
+
+
+	comStubPackage := FamixJavaPackage new.
+	comStubPackage name: 'com'.
+	aStubClass := FamixJavaClass new
+		              name: 'DemoStubClass';
+		              yourself.
+	comStubPackage addType: aStubClass.
+	comStubPackage isStub: true.
+	aStubClass isStub: true.
+
+	model addAll: {
+			aClass.
+			orgPackage.
+			comStubPackage.
+			aStubClass }.
+	"Export the model"
+	memory := FileSystem memory.
+	FAMIX2JavaVisitor new
+		rootFolder: (memory / 'exported') asFileReference;
+		export: model.
+	self assert: (memory / 'exported') asFileReference exists.
+	self assert: (memory / 'exported' / 'org') asFileReference exists.
+	self deny: (memory / 'exported' / 'com') asFileReference exists.
+	self assert:
+		(memory / 'exported' / 'org') asFileReference isDirectory.
+	self assert:
+		(memory / 'exported' / 'org' / 'DemoClass.java') asFileReference
+			exists.
+	self assert:
+		(memory / 'exported' / 'org' / 'DemoClass.java') asFileReference
+			isFile
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testExportPackage [
 
 	| model aClass orgPackage memory |
