@@ -358,6 +358,27 @@ FAMIX2JavaVisitorTest >> testVisitClassWithDependencyAttributeAlsoStub [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitMethodDeclaredTypePrimitiveVoid [
+
+	| method methodClass primitiveVoid model resultString |
+	model := FamixJavaModel new.
+
+	method := model newMethodNamed: 'aMethod'.
+	primitiveVoid := model newPrimitiveTypeNamed: 'void'.
+	method declaredType: primitiveVoid.
+
+	methodClass := model newClass.
+	methodClass addMethod: method.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                method accept: visitor ].
+	self assert: resultString equals: 'void aMethod() {
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
 	| method methodClass exception model resultString |
