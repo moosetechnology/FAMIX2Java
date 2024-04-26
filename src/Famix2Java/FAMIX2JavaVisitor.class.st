@@ -339,7 +339,7 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	currentStream << ' {'.
 	self eol.
 	"Printing Attributs"
-	tabs := tabs + 1.
+	self indentPlus.
 	aClass attributes do: [ :attribute |
 		attribute accept: self clone.
 		self eol ].
@@ -385,7 +385,7 @@ FAMIX2JavaVisitor >> visitInterface: aClass [
 	currentStream << ' {'.
 	self eol.
 	"Printing Attributs"
-	tabs := tabs + 1.
+	self indentPlus.
 	aClass attributes do: [ :attribute |
 		attribute accept: self clone.
 		self eol ].
