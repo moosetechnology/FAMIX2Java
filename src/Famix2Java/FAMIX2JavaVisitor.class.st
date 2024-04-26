@@ -33,12 +33,6 @@ FAMIX2JavaVisitor >> <<< aString [
 	currentStream << aString
 ]
 
-{ #category : #'private-exporting' }
-FAMIX2JavaVisitor >> crlf [
-
-	currentStream << String crlf
-]
-
 { #category : #accessing }
 FAMIX2JavaVisitor >> currentStream [
 
@@ -209,7 +203,7 @@ FAMIX2JavaVisitor >> printImportsAnnotationTypes: annotationTypes [
 				<<< '.';
 				<<< annotType name;
 				<<< ';';
-				crlf ]
+				eol ]
 ]
 
 { #category : #printing }
