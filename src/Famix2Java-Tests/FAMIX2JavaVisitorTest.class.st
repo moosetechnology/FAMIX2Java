@@ -157,6 +157,52 @@ FAMIX2JavaVisitorTest >> testImportAttributeDeclaredTypeIfPossible [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitAnnotationWithAttribute [
+
+	| model resultString annotationType anAnnotationInstance annotationTypeAttribute annotationInstanceAttribute |
+	model := FamixJavaModel new.
+	annotationType := model newAnnotationType.	
+	annotationType name: 'AnAnnotation'.
+	anAnnotationInstance := model newAnnotationInstance.
+	anAnnotationInstance annotationType: annotationType.
+	
+	annotationTypeAttribute := model newAnnotationTypeAttribute.
+	annotationTypeAttribute name: 'annotationAttributeName'.
+	
+	
+	annotationInstanceAttribute := FamixJavaAnnotationInstanceAttribute new.
+	annotationInstanceAttribute value: 'true'.
+	annotationInstanceAttribute annotationTypeAttribute: annotationTypeAttribute.
+	anAnnotationInstance addAttribute: annotationInstanceAttribute.
+	
+	model add: annotationInstanceAttribute.
+	
+
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                anAnnotationInstance accept: visitor ].
+	self assert: resultString equals: '@AnAnnotation(annotationAttributeName = true)'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitAnnotationWithoutAttribute [
+
+	| model resultString annotationType anAnnotationInstance |
+	model := FamixJavaModel new.
+	annotationType := model newAnnotationType.
+	annotationType name: 'AnAnnotation'. 
+	anAnnotationInstance := model newAnnotationInstance.
+	anAnnotationInstance annotationType: annotationType.
+
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                anAnnotationInstance accept: visitor ].
+	self assert: resultString equals: '@AnAnnotation'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitAttribute [
 
 	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
