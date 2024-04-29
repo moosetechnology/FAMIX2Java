@@ -322,7 +322,7 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 		self eol ].
 	"Printing class annotations"
 	aClass annotationInstances do: [ :annotationInstance |
-		self clone visit: annotationInstance.
+		annotationInstance accept: self clone.
 		self eol ].
 	"Printing Class declaration"
 	currentStream << 'public class '.

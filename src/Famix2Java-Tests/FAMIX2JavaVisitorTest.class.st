@@ -305,6 +305,29 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasTwoInterfaces [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitBasicClassWithAnnotation [
+
+	| model resultString aClass annotationType anAnnotationInstance |
+	model := FamixJavaModel new.
+	aClass := model newClassNamed: 'DemoClass'.
+	annotationType := model newAnnotationType.
+	annotationType name: 'AnAnnotation'. 
+	anAnnotationInstance := model newAnnotationInstance.
+	anAnnotationInstance annotationType: annotationType.
+	
+	aClass addAnnotationInstance: anAnnotationInstance.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: '@AnAnnotation
+public class DemoClass {
+
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitBasicInterface [
 
 	| model resultString aClass |
