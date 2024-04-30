@@ -93,12 +93,11 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 			                      collect: #declaredType)
 		                     , (aClass methods collect: #declaredType)
 		                     , (aClass methods collect: [ :m | 
-				                      m caughtExceptions "collect: #exceptionClass" ])
+				                      m caughtExceptions ])
 		                     , (aClass methods collect: [ :m | 
-				                      m thrownExceptions "collect: #exceptionClass" ])
+				                      m thrownExceptions ])
 		                     , (aClass methods collect: [ :m | 
-				                      m declaredExceptions "collect:
-					                      #exceptionClass" ]))
+				                      m declaredExceptions ]))
 			                    flattened) asSet reject: #isNil) flatCollect: [ 
 		                  :element | 
 		                  element atAnyScope: { 
