@@ -143,17 +143,16 @@ FAMIX2JavaVisitor >> initialize [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
-	aDeclaredType isParametricEntity
-		ifFalse: [ currentStream << aDeclaredType name.
-			^ self].
+
+	aDeclaredType isParametricEntity ifFalse: [
+		currentStream << aDeclaredType name.
+		^ self ].
 	currentStream
 		<< aDeclaredType name;
 		<< '<'.
-	1 to: aDeclaredType arguments size - 1 do: [ :index | 
-		self printDeclaredType: (aDeclaredType arguments at: index).
-		currentStream << ',' ].
-	aDeclaredType arguments
-		ifNotEmpty: [ :arguments | self printDeclaredType: arguments last ].
+	aDeclaredType concreteParameters
+		do: [ :parameter | self printDeclaredType: parameter ]
+		separatedBy: [ currentStream << ', ' ].
 	currentStream << '>'
 ]
 
@@ -486,11 +485,11 @@ FAMIX2JavaVisitor >> visitParameter: aParameter [
 FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
 	self <<< aParameterizableType name.
 	self <<< '<'.
-	aParameterizableType arguments
-		do: [ :argument | 
-			argument isParameterType
-				ifTrue: [ self visitParameterizableType: argument ]
-				ifFalse: [ self <<< argument name ] ]
+	aParameterizableType concreteParameters
+		do: [ :concreteParameter | 
+			concreteParameter isParameterType
+				ifTrue: [ self visitParameterizableType: concreteParameter ]
+				ifFalse: [ self <<< concreteParameter name ] ]
 		separatedBy: [ self <<< ',' ].
 	self <<< '>'
 ]

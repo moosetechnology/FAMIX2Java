@@ -535,6 +535,36 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithParameter [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitMethodWithParametricDeclaredType [
+
+	| method model resultString parameter list methodClass |
+	model := FamixJavaModel new.
+	method := FamixJavaParametricMethod named: 'testMethod'.
+	parameter := FamixJavaParameter named: 'list'.
+	list := FamixJavaParametricClass named: 'List'.
+	list addConcreteParameter: (FamixJavaType named: 'Object').
+	parameter declaredType: list.
+	method addParameter: parameter.
+	method declaredType: list.
+	method addConcreteParameter: list.
+	methodClass := FamixJavaClass new.
+	methodClass addMethod: method.
+	model addAll: {
+			parameter.
+			list.
+			method.
+			methodClass }.
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                method accept: visitor ].
+	self
+		assert: resultString
+		equals: 'List<Object> testMethod(List<Object> list) {
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithThrownException [
 
 	| method methodClass exception model resultString |
