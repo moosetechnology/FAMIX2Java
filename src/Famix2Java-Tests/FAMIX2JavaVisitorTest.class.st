@@ -561,6 +561,83 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithThrownException [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitParametricClass [
+
+	| model resultString aClass k |
+	model := FamixJavaModel new.
+	aClass := FamixJavaParametricClass new.
+	aClass name: 'DemoClass'.
+	model add: aClass.
+	
+	k := FamixJavaParameterType named: 'K'.
+	model add: k.
+	aClass genericParameters: { k }.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: 'public class DemoClass<K> {
+
+
+}'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitParametricClassWithMultipleParameters [
+
+	| model resultString aClass k v z |
+	model := FamixJavaModel new.
+	aClass := FamixJavaParametricClass new.
+	aClass name: 'DemoClass'.
+	model add: aClass.
+
+	k := FamixJavaParameterType named: 'K'.
+	model add: k.
+	v := FamixJavaParameterType named: 'V'.
+	model add: v.
+	z := FamixJavaParameterType named: 'Z'.
+	model add: z.
+	aClass genericParameters: {
+			k.
+			v.
+			z }.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: 'public class DemoClass<K, V, Z> {
+
+
+}'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitParametricClassWithTwoParameters [
+
+	| model resultString aClass k v |
+	model := FamixJavaModel new.
+	aClass := FamixJavaParametricClass new.
+	aClass name: 'DemoClass'.
+	model add: aClass.
+
+	k := FamixJavaParameterType named: 'K'.
+	model add: k.
+	v := FamixJavaParameterType named: 'V'.
+	model add: v.
+	aClass genericParameters: {
+			k.
+			v }.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: 'public class DemoClass<K, V> {
+
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitPrivateMethod [
 
 	| method methodClass model resultString |

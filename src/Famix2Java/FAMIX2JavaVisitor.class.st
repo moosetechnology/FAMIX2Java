@@ -509,3 +509,53 @@ FAMIX2JavaVisitor >> visitParameterizedType: aParameterizedType [
 			separatedBy: [ self <<< ',' ].
 		self <<< '>' ]
 ]
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
+	"Printing class package and imports if the class is not an inner class"
+
+	(aFamixJavaParametricClass typeContainer isNotNil and: [
+		 aFamixJavaParametricClass typeContainer isKindOf: FamixJavaPackage ])
+		ifTrue: [
+			self << 'package '.
+			aFamixJavaParametricClass typeContainer fullNamePrintOn:
+				currentStream.
+			self
+				<<< ';';
+				eol;
+				eol.
+			self printImports: aFamixJavaParametricClass.
+			self eol ].
+	"Printing class annotations"
+	aFamixJavaParametricClass annotationInstances do: [
+		:annotationInstance |
+		annotationInstance accept: self clone.
+		self eol ].
+	"Printing Class declaration"
+	currentStream << 'public class '.
+	currentStream << aFamixJavaParametricClass name.
+	currentStream << '<'.
+	aFamixJavaParametricClass genericParameters
+		do: [ :genericParam | currentStream << genericParam name ]
+		separatedBy: [ currentStream << ', ' ].
+	currentStream << '>'.
+	"printing inheritance and implementation"
+	self printExtends: aFamixJavaParametricClass.
+	self printImplements: aFamixJavaParametricClass.
+	currentStream << ' {'.
+	self eol.
+	"Printing Attributs"
+	self indentPlus.
+	aFamixJavaParametricClass attributes do: [ :attribute |
+		attribute accept: self clone.
+		self eol ].
+	self eol.
+	"Printing Methods"
+	aFamixJavaParametricClass methods do: [ :method |
+		self eol.
+		method accept: self clone.
+		self eol ].
+	"Closing Class"
+	self eol.
+	currentStream << '}'
+]
