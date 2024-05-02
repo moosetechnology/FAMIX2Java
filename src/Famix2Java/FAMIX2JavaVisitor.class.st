@@ -493,21 +493,6 @@ FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
 	self <<< '>'
 ]
 
-{ #category : #generated }
-FAMIX2JavaVisitor >> visitParameterizedType: aParameterizedType [
-
-	self <<< aParameterizedType name.
-	aParameterizedType arguments ifNotEmpty: [ :arguments | 
-		self <<< '<'.
-		arguments
-			do: [ :argument | 
-				argument isParameterType
-					ifTrue: [ self visitParameterizableType: argument ]
-					ifFalse: [ self <<< argument name ] ]
-			separatedBy: [ self <<< ',' ].
-		self <<< '>' ]
-]
-
 { #category : #visiting }
 FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
 	"Printing class package and imports if the class is not an inner class"
