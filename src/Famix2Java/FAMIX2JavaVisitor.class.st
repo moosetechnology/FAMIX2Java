@@ -23,14 +23,15 @@ Class {
 
 { #category : #'private-exporting' }
 FAMIX2JavaVisitor >> << aString [
-	self indent.
+
 	currentStream << aString
 ]
 
 { #category : #'private-exporting' }
-FAMIX2JavaVisitor >> <<< aString [
-	"without tab"
-	currentStream << aString
+FAMIX2JavaVisitor >> <<| aString [
+
+	self indent.
+	self << aString
 ]
 
 { #category : #accessing }
@@ -60,7 +61,7 @@ FAMIX2JavaVisitor >> endOfLine: anObject [
 { #category : #'private-exporting' }
 FAMIX2JavaVisitor >> eol [
 	"print the end of line that can be configured"
-	self <<< self endOfLine
+	self << self endOfLine
 ]
 
 { #category : #'public-exporting' }
@@ -161,8 +162,8 @@ FAMIX2JavaVisitor >> printExtends: aClass [
 	aClass superclass isNil
 		ifFalse: [ "ignore Object"
 			self
-				<<< ' extends ';
-				<<< aClass superclass name ]
+				<< ' extends ';
+				<< aClass superclass name ]
 ]
 
 { #category : #printing }
@@ -173,10 +174,10 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 
 	interfaces := aClass interfaceImplementations.
 	interfaces ifNotEmpty: [ :implementations |
-		self <<< ' implements '.
+		self << ' implements '.
 		implementations
-			do: [ :implementation | self <<< implementation interface name ]
-			separatedBy: [ self <<< ', ' ] ]
+			do: [ :implementation | self << implementation interface name ]
+			separatedBy: [ self << ', ' ] ]
 ]
 
 { #category : #printing }
@@ -197,9 +198,9 @@ FAMIX2JavaVisitor >> printImportsAnnotationTypes: annotationTypes [
 			self << 'import '.
 			annotType typeContainer fullNamePrintOn: currentStream.
 			self
-				<<< '.';
-				<<< annotType name;
-				<<< ';';
+				<< '.';
+				<< annotType name;
+				<< ';';
 				eol ]
 ]
 
@@ -207,10 +208,10 @@ FAMIX2JavaVisitor >> printImportsAnnotationTypes: annotationTypes [
 FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
 	(declaredTypes sorted: #mooseName ascending)
 		do: [ :class | 
-			self << 'import '.
+			self <<| 'import '.
 			class fullNamePrintOn: currentStream.
 			self
-				<<< ';';
+				<< ';';
 				eol ]
 ]
 
@@ -247,21 +248,21 @@ FAMIX2JavaVisitor >> space [
 FAMIX2JavaVisitor >> visitAnnotationInstance: aAnnotationInstance [
 
 	self
-		<< '@';
-		<<< aAnnotationInstance annotationType name.
+		<<| '@';
+		<< aAnnotationInstance annotationType name.
 	aAnnotationInstance attributes ifNotEmpty: [ :attributes |
-		self <<< '('.
+		self << '('.
 		attributes
 			do: [ :attribute | attribute accept: self ]
-			separatedBy: [ self <<< ',' ].
-		self <<< ')' ]
+			separatedBy: [ self << ',' ].
+		self << ')' ]
 ]
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitAnnotationInstanceAttribute: aAnnotationInstanceAttribute [
-	self <<< aAnnotationInstanceAttribute name;
-	<<< ' = ';
-	<<< aAnnotationInstanceAttribute value
+	self << aAnnotationInstanceAttribute name;
+	<< ' = ';
+	<< aAnnotationInstanceAttribute value
 ]
 
 { #category : #accessing }
@@ -284,11 +285,11 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 	"Declared Type"
 	aAttribute declaredType
 		ifNotNil: [ self printDeclaredType: aAttribute declaredType ]
-		ifNil: [ self <<< '/* erreur */ Object' ].
+		ifNil: [ self << '/* erreur */ Object' ].
 	"Attribute name"
 	self
 		space;
-		<<< aAttribute name.
+		<< aAttribute name.
 
 	"This is an hack to get the affectation is any (hack because some problems with annotations that are sometimes part of the sourceAnchor...)"
 	attributeSource := aAttribute sourceAnchor
@@ -304,10 +305,10 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 		(attributeSourceFromName includesSubstring: '=') ifTrue: [
 			self
 				space;
-				<<< ((attributeSourceFromName
+				<< ((attributeSourceFromName
 						  copyFrom: (attributeSourceFromName findString: '=')
 						  to: attributeSourceFromName size) removeSuffix: ';') ] ].
-	self <<< ';'
+	self << ';'
 ]
 
 { #category : #accessing }
@@ -319,7 +320,7 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 		self << 'package '.
 		aClass typeContainer fullNamePrintOn: currentStream.
 		self
-			<<< ';';
+			<< ';';
 			eol;
 			eol.
 		self printImports: aClass.
@@ -368,7 +369,7 @@ FAMIX2JavaVisitor >> visitInterface: aClass [
 		self << 'package '.
 		aClass typeContainer fullNamePrintOn: currentStream.
 		self
-			<<< ';';
+			<< ';';
 			eol;
 			eol.
 		self printImports: aClass.
@@ -408,10 +409,10 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 	self printMethodAnnotations: aMethod.
 	"Printing modifiers of method ex: static,public/private/protected"
 	self indent.
-	aMethod isPrivate ifTrue: [ self <<< 'private ' ].
-	aMethod isProtected ifTrue: [ self <<< 'protected ' ].
-	aMethod isPublic ifTrue: [ self <<< 'public ' ].
-	aMethod isClassSide ifTrue: [ self <<< 'static ' ].
+	aMethod isPrivate ifTrue: [ self << 'private ' ].
+	aMethod isProtected ifTrue: [ self << 'protected ' ].
+	aMethod isPublic ifTrue: [ self << 'public ' ].
+	aMethod isClassSide ifTrue: [ self << 'static ' ].
 	"Printing return type for method"
 	aMethod declaredType ifNotNil: [ :declaredType | 
 		self printDeclaredType: declaredType.
@@ -421,35 +422,35 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 		 aMethod isAnInitializer and: [ aMethod isConstructor not ] ])
 		ifFalse: [ 
 			self
-				<<< aMethod name;
-				<<< '('.
+				<< aMethod name;
+				<< '('.
 			(aMethod parameters sorted: [ :p :p2 | 
 				 p sourceAnchor startPos < p2 sourceAnchor startPos ])
 				do: [ :parameter | parameter accept: self clone  ]
-				separatedBy: [ self <<< ', ' ].
-			self <<< ')' ]
+				separatedBy: [ self << ', ' ].
+			self << ')' ]
 		ifTrue: [ self << 'static' ].
 	"print exception"
 	((aMethod withMethodsOverriding collect: [ :m | 
 		  m thrownExceptions , m declaredExceptions ])
 		 flattened asSet asOrderedCollection sorted: #name ascending) 
 		ifNotEmpty: [ :exceptions | 
-			self <<< ' throws '.
+			self << ' throws '.
 			exceptions
-				do: [ :exception | self <<< exception name ]
-				separatedBy: [ self <<< ', ' ] ].
+				do: [ :exception | self << exception name ]
+				separatedBy: [ self << ', ' ] ].
 
 	"Printing body of method if class is not abstract or an interface"
 	((aMethod atScope: FamixTClass) anyOne isInterface or: [ 
 		 aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
-		ifTrue: [ self <<< ';' ]
+		ifTrue: [ self << ';' ]
 		ifFalse: [ 
-			currentStream << ' {'.
+			self << ' {'.
 			self eol.
-			self <<< aMethod bodySourceText.
+			self << aMethod bodySourceText.
 			self
 				eol;
-				<< '}' ]
+				<<| '}' ]
 ]
 
 { #category : #visiting }
@@ -477,23 +478,23 @@ FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 FAMIX2JavaVisitor >> visitParameter: aParameter [
 	aParameter declaredType isParametricEntity
 		ifTrue: [ self visitParameterizableType: aParameter declaredType ]
-		ifFalse: [ self <<< aParameter declaredType name ].
+		ifFalse: [ self << aParameter declaredType name ].
 	self
 		space;
-		<<< aParameter name
+		<< aParameter name
 ]
 
 { #category : #generated }
 FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
-	self <<< aParameterizableType name.
-	self <<< '<'.
+	self << aParameterizableType name.
+	self << '<'.
 	aParameterizableType concreteParameters
 		do: [ :concreteParameter | 
 			concreteParameter isParameterType
 				ifTrue: [ self visitParameterizableType: concreteParameter ]
-				ifFalse: [ self <<< concreteParameter name ] ]
-		separatedBy: [ self <<< ',' ].
-	self <<< '>'
+				ifFalse: [ self << concreteParameter name ] ]
+		separatedBy: [ self << ',' ].
+	self << '>'
 ]
 
 { #category : #visiting }
@@ -507,7 +508,7 @@ FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
 			aFamixJavaParametricClass typeContainer fullNamePrintOn:
 				currentStream.
 			self
-				<<< ';';
+				<< ';';
 				eol;
 				eol.
 			self printImports: aFamixJavaParametricClass.
