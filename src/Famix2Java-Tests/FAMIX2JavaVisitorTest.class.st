@@ -63,6 +63,28 @@ FAMIX2JavaVisitorTest >> testDoNotExportPackageStub [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testExportAnnotationImport [
+
+	| model resultString aClass annotationType anAnnotationInstance package |
+	model := FamixJavaModel new.
+	aClass := model newClassNamed: 'DemoClass'.
+	annotationType := model newAnnotationType.
+	annotationType name: 'AnAnnotation'.
+	anAnnotationInstance := model newAnnotationInstance.
+	anAnnotationInstance annotationType: annotationType.
+	aClass addAnnotationInstance: anAnnotationInstance.
+	package := model newPackageNamed: 'fr'.
+	annotationType typeContainer: package.
+
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                visitor printImports: aClass ].
+	self assert: resultString equals: 'import fr.AnAnnotation;
+'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testExportOnePackageWithMultipleClasses [
 
 	| model aClass orgPackage memory aClass2 |
