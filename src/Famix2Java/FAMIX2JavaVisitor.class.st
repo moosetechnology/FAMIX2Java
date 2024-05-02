@@ -136,8 +136,7 @@ FAMIX2JavaVisitor >> initialize [
 
 	super initialize.
 	self endOfLine: OSPlatform current lineEnding.
-	tabs := 0.
-	tabulationSize := 4
+	self reset
 ]
 
 { #category : #accessing }
@@ -332,15 +331,17 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	self eol.
 	"Printing Attributs"
 	self indentPlus.
-	aClass attributes do: [ :attribute |
-		attribute accept: self clone.
-		self eol ].
-	self eol.
-	"Printing Methods"
-	aClass methods do: [ :method |
+	aClass attributes ifNotEmpty: [ :attributes |
 		self eol.
-		method accept: self clone.
-		self eol ].
+		attributes do: [ :attribute |
+			attribute accept: self clone.
+			self eol ] ].
+	"Printing Methods"
+	aClass methods ifNotEmpty: [ :methods |
+		methods do: [ :method |
+			self eol.
+			method accept: self clone.
+			self eol ] ].
 	"Closing Class"
 	self eol.
 	currentStream << '}'
@@ -443,7 +444,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 		ifFalse: [ 
 			currentStream << ' {'.
 			self eol.
-			self << aMethod bodySourceText.
+			self <<< aMethod bodySourceText.
 			self
 				eol;
 				<< '}' ]

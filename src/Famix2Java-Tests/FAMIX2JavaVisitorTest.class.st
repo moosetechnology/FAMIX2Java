@@ -242,7 +242,6 @@ FAMIX2JavaVisitorTest >> testVisitBasicClass [
 		                aClass accept: visitor ].
 	self assert: resultString equals: 'public class DemoClass {
 
-
 }'
 ]
 
@@ -273,7 +272,6 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasOneInterface [
 		assert: resultString
 		equals: 'public class DemoClass implements DemoOneInterface {
 
-
 }'
 ]
 
@@ -303,7 +301,6 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasSuperClass [
 	self
 		assert: resultString
 		equals: 'public class DemoClass extends DemoSuperClass {
-
 
 }'
 ]
@@ -346,7 +343,6 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasTwoInterfaces [
 		equals:
 			'public class DemoClass implements DemoOneInterface, DemoTwoInterface {
 
-
 }'
 ]
 
@@ -368,7 +364,6 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassWithAnnotation [
 		                aClass accept: visitor ].
 	self assert: resultString equals: '@AnAnnotation
 public class DemoClass {
-
 
 }'
 ]
@@ -461,6 +456,47 @@ FAMIX2JavaVisitorTest >> testVisitClassWithDependencyAttributeAlsoStub [
 		                visitor printImports: attributeClass ].
 	self assert: resultString equals: 'import org.AttributeClass;
 '
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitClassWithMethodsAndAttributes [
+
+	| model resultString aClass primitiveVoid method method2 attributeDeclaredType attribute |
+	model := FamixJavaModel new.
+	aClass := model newClassNamed: 'DemoClass'.
+
+	attributeDeclaredType := model newClassNamed: 'AttributeClass'.
+	attribute := model newAttributeNamed: 'anAttribute'.
+	attribute declaredType: attributeDeclaredType.
+	aClass addAttribute: attribute.
+
+	primitiveVoid := model newPrimitiveTypeNamed: 'void'.
+	method := model newMethodNamed: 'aMethod'.
+
+	method declaredType: primitiveVoid.
+	aClass addMethod: method.
+
+	method2 := model newMethodNamed: 'aMethodTwo'.
+	method2 declaredType: primitiveVoid.
+	aClass addMethod: method2.
+
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: 'public class DemoClass {
+
+    AttributeClass anAttribute;
+
+    void aMethod() {
+
+    }
+
+    void aMethodTwo() {
+
+    }
+
+}'
 ]
 
 { #category : #test }
