@@ -252,9 +252,9 @@ FAMIX2JavaVisitor >> visitAnnotationInstance: aAnnotationInstance [
 	aAnnotationInstance attributes ifNotEmpty: [ :attributes | 
 		self <<< '('.
 		1 to: attributes size - 1 do: [ :index | 
-			(attributes at: index) accept: self clone.
+			(attributes at: index) accept: self.
 			self <<< ',' ].
-		attributes last accept: self clone.
+		attributes last accept: self.
 		self <<< ')' ]
 ]
 
@@ -274,7 +274,7 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	| attributeSource attributeSourceFromName |
 	aAttribute annotationInstances do: [ :annotationInstance | 
-		annotationInstance accept: self clone .
+		annotationInstance accept: self .
 		self eol ].
 
 	"Printing modifiers"
@@ -461,14 +461,14 @@ FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 		self rootFolder ensureCreateDirectory ].
 	aFamixJavaPackage children do: [ :child |
 		child isPackage
-			ifTrue: [ child accept: self clone ]
+			ifTrue: [ child accept: self ]
 			ifFalse: [ "I am a class or interface, or anything else that will be a file"
 				| file |
 				file := self rootFolder / (child name , '.java').
 				file deleteIfAbsent: [  ].
 				file writeStreamDo: [ :stream |
 					currentStream := stream.
-					child accept: self clone ] ] ]
+					child accept: self ] ] ]
 ]
 
 { #category : #generated }
