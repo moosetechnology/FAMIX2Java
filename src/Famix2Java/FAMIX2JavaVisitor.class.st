@@ -334,13 +334,13 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	aClass attributes ifNotEmpty: [ :attributes |
 		self eol.
 		attributes do: [ :attribute |
-			attribute accept: self clone.
+			attribute accept: self.
 			self eol ] ].
 	"Printing Methods"
 	aClass methods ifNotEmpty: [ :methods |
 		methods do: [ :method |
 			self eol.
-			method accept: self clone.
+			method accept: self.
 			self eol ] ].
 	"Closing Class"
 	self eol.
