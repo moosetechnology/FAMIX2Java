@@ -10,7 +10,7 @@ Class {
 	#category : #'Famix2Java-Tests'
 }
 
-{ #category : #test }
+{ #category : #running }
 FAMIX2JavaVisitorTest >> setUp [ 
 	super setUp.
 	visitor := FAMIX2JavaVisitor new.
