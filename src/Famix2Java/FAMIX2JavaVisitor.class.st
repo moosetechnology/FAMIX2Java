@@ -249,12 +249,11 @@ FAMIX2JavaVisitor >> visitAnnotationInstance: aAnnotationInstance [
 	self
 		<< '@';
 		<<< aAnnotationInstance annotationType name.
-	aAnnotationInstance attributes ifNotEmpty: [ :attributes | 
+	aAnnotationInstance attributes ifNotEmpty: [ :attributes |
 		self <<< '('.
-		1 to: attributes size - 1 do: [ :index | 
-			(attributes at: index) accept: self.
-			self <<< ',' ].
-		attributes last accept: self.
+		attributes
+			do: [ :attribute | attribute accept: self ]
+			separatedBy: [ self <<< ',' ].
 		self <<< ')' ]
 ]
 
@@ -267,14 +266,13 @@ FAMIX2JavaVisitor >> visitAnnotationInstanceAttribute: aAnnotationInstanceAttrib
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitAttribute: aAttribute [
-
 	"Visit an attribute to print its annotations and its field."
 
 	" Printing the annotations for the attribute"
 
 	| attributeSource attributeSourceFromName |
-	aAttribute annotationInstances do: [ :annotationInstance | 
-		annotationInstance accept: self .
+	aAttribute annotationInstances do: [ :annotationInstance |
+		annotationInstance accept: self.
 		self eol ].
 
 	"Printing modifiers"
@@ -293,13 +291,22 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 		<<< aAttribute name.
 
 	"This is an hack to get the affectation is any (hack because some problems with annotations that are sometimes part of the sourceAnchor...)"
-	attributeSource := aAttribute sourceAnchor ifNil: [ '' ] ifNotNil: [ :sourceAnchor | sourceAnchor sourceText ].
-	attributeSource ifNotEmpty: [ 
-		attributeSourceFromName := attributeSource copyFrom: (attributeSource findString: aAttribute name) to: attributeSource size.
-		(attributeSourceFromName includesSubstring: '=') ifTrue: [ 
+	attributeSource := aAttribute sourceAnchor
+		                   ifNil: [ '' ]
+		                   ifNotNil: [ :sourceAnchor |
+		                   sourceAnchor sourceText ].
+	attributeSource ifNotEmpty: [
+		attributeSourceFromName := attributeSource
+			                           copyFrom:
+			                           (attributeSource findString:
+				                            aAttribute name)
+			                           to: attributeSource size.
+		(attributeSourceFromName includesSubstring: '=') ifTrue: [
 			self
 				space;
-				<<< ((attributeSourceFromName copyFrom: (attributeSourceFromName findString: '=') to: attributeSourceFromName size) removeSuffix: ';') ] ].
+				<<< ((attributeSourceFromName
+						  copyFrom: (attributeSourceFromName findString: '=')
+						  to: attributeSourceFromName size) removeSuffix: ';') ] ].
 	self <<< ';'
 ]
 
@@ -400,11 +407,6 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 	"Printing method annotations"
 	self printMethodAnnotations: aMethod.
 	"Printing modifiers of method ex: static,public/private/protected"
-	"aMethod modifiers
-		do: [ :modifier | 
-			self
-				<< modifier;
-				space ]."
 	self indent.
 	aMethod isPrivate ifTrue: [ self <<< 'private ' ].
 	aMethod isProtected ifTrue: [ self <<< 'protected ' ].
