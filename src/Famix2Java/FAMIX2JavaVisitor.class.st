@@ -58,6 +58,19 @@ FAMIX2JavaVisitor >> endOfLine: anObject [
 	endOfLine := anObject
 ]
 
+{ #category : #visiting }
+FAMIX2JavaVisitor >> ensureCreateDirectoryForPackage: aFamixJavaPackage [
+
+	| folder |
+	folder := self rootFolder.
+	aFamixJavaPackage name = '<Default Package>' ifTrue: [ ^ self ].
+	aFamixJavaPackage allParents reverse do: [ :namespace |
+		folder := folder / namespace name.
+		folder ensureCreateDirectory ].
+	folder := folder / aFamixJavaPackage name.
+	^ folder ensureCreateDirectory
+]
+
 { #category : #'private-exporting' }
 FAMIX2JavaVisitor >> eol [
 	"print the end of line that can be configured"
@@ -465,15 +478,11 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 { #category : #visiting }
 FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 
-	aFamixJavaPackage name = '<Default Package>' ifFalse: [
-		aFamixJavaPackage allParents reverse do: [ :namespace |
-			self rootFolder: self rootFolder / namespace name.
-			self rootFolder ensureCreateDirectory ].
-		self rootFolder: self rootFolder / aFamixJavaPackage name.
-		self rootFolder ensureCreateDirectory ].
 	aFamixJavaPackage types do: [ :type |
-		| file |
-		file := self rootFolder / (type name , '.java').
+		| file folder |
+		folder := self ensureCreateDirectoryForPackage: aFamixJavaPackage.
+
+		file := folder / (type name , '.java').
 		file deleteIfAbsent: [  ].
 		file writeStreamDo: [ :stream |
 			currentStream := stream.

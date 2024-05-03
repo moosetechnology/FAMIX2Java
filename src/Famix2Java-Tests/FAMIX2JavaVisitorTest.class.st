@@ -118,6 +118,70 @@ public class DemoClass {
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testExportMultiLevelPackagesMultiHierarachyWithClassAtMultipleLevel [
+
+	| model orgClass aCompanyClass orgPackage companyPackage memory frPackage otherCompanyPackage frClass otherCompanyClass |
+	model := FamixJavaModel new.
+	frPackage := model newPackageNamed: 'fr'.
+	otherCompanyPackage := model newPackageNamed: 'otherCompany'.
+	frClass := model newClassNamed: 'FrClass'.
+	otherCompanyClass := model newClassNamed: 'OtherCompanyClass'.
+	frPackage addType: frClass.
+	frPackage addChildEntity: otherCompanyPackage.
+	otherCompanyPackage addType: otherCompanyClass.
+
+	orgPackage := model newPackageNamed: 'org'.
+	companyPackage := model newPackageNamed: 'company'.
+	orgClass := model newClassNamed: 'OrgClass'.
+	aCompanyClass := model newClassNamed: 'CompanyClass'.
+	orgPackage addType: orgClass.
+	orgPackage addChildEntity: companyPackage.
+	companyPackage addType: aCompanyClass.
+	"Export the model"
+	memory := FileSystem memory.
+	FAMIX2JavaVisitor new
+		rootFolder: (memory / 'exported') asFileReference;
+		export: model.
+	self assert: (memory / 'exported') asFileReference exists.
+	self assert: (memory / 'exported' / 'org') asFileReference exists.
+	self assert:
+		(memory / 'exported' / 'org') asFileReference isDirectory.
+	self
+		assert: (memory / 'exported' / 'org') asFileReference children size
+		equals: 2.
+	self assert:
+		(memory / 'exported' / 'org' / 'OrgClass.java') asFileReference
+			exists.
+	self assert:
+		(memory / 'exported' / 'org' / 'OrgClass.java') asFileReference
+			isFile.
+	self assert:
+		(memory / 'exported' / 'org' / 'company') asFileReference exists.
+	self assert:
+		(memory / 'exported' / 'org' / 'company') asFileReference
+			isDirectory.
+	self assert:
+		(memory / 'exported' / 'org' / 'company' / 'CompanyClass.java')
+			asFileReference exists.
+	self assert:
+		(memory / 'exported' / 'org' / 'company' / 'CompanyClass.java')
+			asFileReference isFile.
+	self assert: (memory / 'exported' / 'fr') asFileReference isDirectory.
+	self
+		assert: (memory / 'exported' / 'fr') asFileReference children size
+		equals: 2.
+	self assert:
+		(memory / 'exported' / 'fr' / 'FrClass.java') asFileReference isFile.
+
+	self assert:
+		(memory / 'exported' / 'fr' / 'otherCompany') asFileReference
+			isDirectory.
+
+	self assert: (memory / 'exported' / 'fr' / 'otherCompany'
+		 / 'OtherCompanyClass.java') asFileReference isFile
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testExportMultiLevelPackagesWithClassAtMultipleLevel [
 
 	| model orgClass aCompanyClass orgPackage companyPackage memory |
@@ -138,6 +202,9 @@ FAMIX2JavaVisitorTest >> testExportMultiLevelPackagesWithClassAtMultipleLevel [
 	self assert: (memory / 'exported' / 'org') asFileReference exists.
 	self assert:
 		(memory / 'exported' / 'org') asFileReference isDirectory.
+	self
+		assert: (memory / 'exported' / 'org') asFileReference children size
+		equals: 2.
 	self assert:
 		(memory / 'exported' / 'org' / 'OrgClass.java') asFileReference
 			exists.
