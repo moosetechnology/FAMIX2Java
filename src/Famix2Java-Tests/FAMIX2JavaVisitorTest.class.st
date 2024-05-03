@@ -85,6 +85,32 @@ FAMIX2JavaVisitorTest >> testExportAnnotationImport [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testExportOneClassInAnotherClass [
+
+	| model aClass orgPackage innerClass resultString |
+	model := FamixJavaModel new.
+	orgPackage := model newPackageNamed: 'org'.
+	aClass := model newClassNamed: 'DemoClass'.
+	innerClass := model newClassNamed: 'InnerClass'.
+	orgPackage addType: aClass.
+	aClass addType: innerClass.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: 'package org;
+
+
+public class DemoClass {
+
+    public class InnerClass {
+
+    }
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testExportOnePackageWithMultipleClasses [
 
 	| model aClass orgPackage memory aClass2 |
@@ -666,7 +692,6 @@ FAMIX2JavaVisitorTest >> testVisitParametricClass [
 		                aClass accept: visitor ].
 	self assert: resultString equals: 'public class DemoClass<K> {
 
-
 }'
 ]
 
@@ -695,7 +720,6 @@ FAMIX2JavaVisitorTest >> testVisitParametricClassWithMultipleParameters [
 		                aClass accept: visitor ].
 	self assert: resultString equals: 'public class DemoClass<K, V, Z> {
 
-
 }'
 ]
 
@@ -720,7 +744,6 @@ FAMIX2JavaVisitorTest >> testVisitParametricClassWithTwoParameters [
 		                visitor currentStream: stream.
 		                aClass accept: visitor ].
 	self assert: resultString equals: 'public class DemoClass<K, V> {
-
 
 }'
 ]

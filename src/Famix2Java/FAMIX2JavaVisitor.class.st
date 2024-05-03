@@ -141,6 +141,28 @@ FAMIX2JavaVisitor >> initialize [
 ]
 
 { #category : #accessing }
+FAMIX2JavaVisitor >> printContentOfClass: aClass [
+
+	aClass types ifNotEmpty: [ :innerTypes |
+		self eol.
+		innerTypes do: [ :innerType |
+			innerType accept: self.
+			self eol ] ].
+
+	aClass attributes ifNotEmpty: [ :attributes |
+		self eol.
+		attributes do: [ :attribute |
+			attribute accept: self.
+			self eol ] ].
+	"Printing Methods"
+	aClass methods ifNotEmpty: [ :methods |
+		methods do: [ :method |
+			self eol.
+			method accept: self.
+			self eol ] ]
+]
+
+{ #category : #accessing }
 FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
 
 	aDeclaredType isParametricEntity ifFalse: [
@@ -187,7 +209,7 @@ FAMIX2JavaVisitor >> printImports: aClass [
 	self printImportsDeclaredTypes: declaredTypes. 
 	"fetching annotation imports"
 	annotationTypes := self extractAnnotationTypesFor: aClass.
-	self printImportsAnnotationTypes: annotationTypes.
+	self printImportsAnnotationTypes: annotationTypes
 	
 ]
 
@@ -315,6 +337,7 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 FAMIX2JavaVisitor >> visitClass: aClass [
 	"Printing class package and imports if the class is not an inner class"
 
+	"Printing class annotations""Printing Class declaration""printing inheritance and implementation""Printing Attributs""Printing Methods""Closing Class"
 	(aClass typeContainer isNotNil and: [
 		 aClass typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [
 		self << 'package '.
@@ -325,34 +348,20 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 			eol.
 		self printImports: aClass.
 		self eol ].
-	"Printing class annotations"
 	aClass annotationInstances do: [ :annotationInstance |
 		annotationInstance accept: self clone.
 		self eol ].
-	"Printing Class declaration"
-	currentStream << 'public class '.
-	currentStream << aClass name.
-	"printing inheritance and implementation"
+	self <<| 'public class '.
+	self << aClass name.
 	self printExtends: aClass.
 	self printImplements: aClass.
-	currentStream << ' {'.
+	self << ' {'.
 	self eol.
-	"Printing Attributs"
 	self indentPlus.
-	aClass attributes ifNotEmpty: [ :attributes |
-		self eol.
-		attributes do: [ :attribute |
-			attribute accept: self.
-			self eol ] ].
-	"Printing Methods"
-	aClass methods ifNotEmpty: [ :methods |
-		methods do: [ :method |
-			self eol.
-			method accept: self.
-			self eol ] ].
-	"Closing Class"
+	self printContentOfClass: aClass.
 	self eol.
-	currentStream << '}'
+	self indentMinus.
+	self <<| '}'
 ]
 
 { #category : #generated }
@@ -533,15 +542,8 @@ FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
 	self eol.
 	"Printing Attributs"
 	self indentPlus.
-	aFamixJavaParametricClass attributes do: [ :attribute |
-		attribute accept: self clone.
-		self eol ].
-	self eol.
-	"Printing Methods"
-	aFamixJavaParametricClass methods do: [ :method |
-		self eol.
-		method accept: self clone.
-		self eol ].
+	self printContentOfClass: aFamixJavaParametricClass.
+	self indentMinus.
 	"Closing Class"
 	self eol.
 	currentStream << '}'
