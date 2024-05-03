@@ -338,8 +338,8 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	"Printing class package and imports if the class is not an inner class"
 
 	"Printing class annotations""Printing Class declaration""printing inheritance and implementation""Printing Attributs""Printing Methods""Closing Class"
-	(aClass typeContainer isNotNil and: [
-		 aClass typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [
+
+	(aClass typeContainer isKindOf: FamixJavaPackage) ifTrue: [
 		self << 'package '.
 		aClass typeContainer fullNamePrintOn: currentStream.
 		self
@@ -510,8 +510,7 @@ FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
 FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
 	"Printing class package and imports if the class is not an inner class"
 
-	(aFamixJavaParametricClass typeContainer isNotNil and: [
-		 aFamixJavaParametricClass typeContainer isKindOf: FamixJavaPackage ])
+	(aFamixJavaParametricClass typeContainer isKindOf: FamixJavaPackage)
 		ifTrue: [
 			self << 'package '.
 			aFamixJavaParametricClass typeContainer fullNamePrintOn:
