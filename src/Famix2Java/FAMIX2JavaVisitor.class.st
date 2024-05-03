@@ -528,17 +528,17 @@ FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
 		annotationInstance accept: self clone.
 		self eol ].
 	"Printing Class declaration"
-	currentStream << 'public class '.
-	currentStream << aFamixJavaParametricClass name.
-	currentStream << '<'.
+	self <<| 'public class '.
+	self << aFamixJavaParametricClass name.
+	self << '<'.
 	aFamixJavaParametricClass genericParameters
-		do: [ :genericParam | currentStream << genericParam name ]
-		separatedBy: [ currentStream << ', ' ].
-	currentStream << '>'.
+		do: [ :genericParam | self << genericParam name ]
+		separatedBy: [ self << ', ' ].
+	self << '>'.
 	"printing inheritance and implementation"
 	self printExtends: aFamixJavaParametricClass.
 	self printImplements: aFamixJavaParametricClass.
-	currentStream << ' {'.
+	self << ' {'.
 	self eol.
 	"Printing Attributs"
 	self indentPlus.
@@ -546,5 +546,5 @@ FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
 	self indentMinus.
 	"Closing Class"
 	self eol.
-	currentStream << '}'
+	self <<| '}'
 ]

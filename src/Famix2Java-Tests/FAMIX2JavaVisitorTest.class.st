@@ -85,6 +85,39 @@ FAMIX2JavaVisitorTest >> testExportAnnotationImport [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testExportInnerParametricClass [
+
+	| model resultString aClass k orgPackage innerParametricClass |
+	model := FamixJavaModel new.
+	orgPackage := model newPackageNamed: 'org'.
+	aClass := model newClassNamed: 'DemoClass'.
+	orgPackage addType: aClass.
+
+	innerParametricClass := FamixJavaParametricClass new.
+	innerParametricClass name: 'DemoClass'.
+	model add: innerParametricClass.
+	aClass addType: innerParametricClass.
+
+	k := FamixJavaParameterType named: 'K'.
+	model add: k.
+	innerParametricClass genericParameters: { k }.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                aClass accept: visitor ].
+	self assert: resultString equals: 'package org;
+
+
+public class DemoClass {
+
+    public class DemoClass<K> {
+
+    }
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testExportOneClassInAnotherClass [
 
 	| model aClass orgPackage innerClass resultString |
