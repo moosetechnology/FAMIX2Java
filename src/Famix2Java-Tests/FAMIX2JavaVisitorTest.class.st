@@ -118,6 +118,46 @@ public class DemoClass {
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testExportMultiLevelPackagesWithClassAtMultipleLevel [
+
+	| model orgClass aCompanyClass orgPackage companyPackage memory |
+	model := FamixJavaModel new.
+	orgPackage := model newPackageNamed: 'org'.
+	companyPackage := model newPackageNamed: 'company'.
+	orgClass := model newClassNamed: 'OrgClass'.
+	aCompanyClass := model newClassNamed: 'CompanyClass'.
+	orgPackage addType: orgClass.
+	orgPackage addChildEntity: companyPackage.
+	companyPackage addType: aCompanyClass.
+	"Export the model"
+	memory := FileSystem memory.
+	FAMIX2JavaVisitor new
+		rootFolder: (memory / 'exported') asFileReference;
+		export: model.
+	self assert: (memory / 'exported') asFileReference exists.
+	self assert: (memory / 'exported' / 'org') asFileReference exists.
+	self assert:
+		(memory / 'exported' / 'org') asFileReference isDirectory.
+	self assert:
+		(memory / 'exported' / 'org' / 'OrgClass.java') asFileReference
+			exists.
+	self assert:
+		(memory / 'exported' / 'org' / 'OrgClass.java') asFileReference
+			isFile.
+	self assert:
+		(memory / 'exported' / 'org' / 'company') asFileReference exists.
+	self assert:
+		(memory / 'exported' / 'org' / 'company') asFileReference
+			isDirectory.
+	self assert:
+		(memory / 'exported' / 'org' / 'company' / 'CompanyClass.java')
+			asFileReference exists.
+	self assert:
+		(memory / 'exported' / 'org' / 'company' / 'CompanyClass.java')
+			asFileReference isFile
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testExportOneClassInAnotherClass [
 
 	| model aClass orgPackage innerClass resultString |

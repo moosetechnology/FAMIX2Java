@@ -471,16 +471,14 @@ FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 			self rootFolder ensureCreateDirectory ].
 		self rootFolder: self rootFolder / aFamixJavaPackage name.
 		self rootFolder ensureCreateDirectory ].
-	aFamixJavaPackage children do: [ :child |
-		child isPackage
-			ifTrue: [ child accept: self ]
-			ifFalse: [ "I am a class or interface, or anything else that will be a file"
-				| file |
-				file := self rootFolder / (child name , '.java').
-				file deleteIfAbsent: [  ].
-				file writeStreamDo: [ :stream |
-					currentStream := stream.
-					child accept: self ] ] ]
+	aFamixJavaPackage types do: [ :type |
+		| file |
+		file := self rootFolder / (type name , '.java').
+		file deleteIfAbsent: [  ].
+		file writeStreamDo: [ :stream |
+			currentStream := stream.
+			type accept: self ] ].
+	aFamixJavaPackage childEntities do: [ :child | child accept: self ]
 ]
 
 { #category : #generated }
