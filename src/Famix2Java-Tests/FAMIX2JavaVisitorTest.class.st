@@ -709,6 +709,36 @@ FAMIX2JavaVisitorTest >> testVisitMethodDeclaredTypePrimitiveVoid [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitMethodWithAnnotation [
+
+	| method methodClass model resultString annotationType anAnnotationInstance |
+	model := FamixJavaModel new.
+	
+	annotationType := model newAnnotationType.
+	annotationType name: 'override'. 
+	anAnnotationInstance := model newAnnotationInstance.
+	anAnnotationInstance annotationType: annotationType.
+
+	method := FamixJavaMethod new.
+	method name: 'aMethod'.
+	method addAnnotationInstance: anAnnotationInstance.
+
+
+	methodClass := FamixJavaClass new.
+	methodClass addMethod: method.
+	model addAll: { 
+			method.
+			methodClass }.
+	resultString := String streamContents: [ :stream | 
+		                visitor currentStream: stream.
+		                method accept: visitor ].
+	self assert: resultString equals: '@override
+aMethod() {
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
 	| method methodClass exception model resultString |
