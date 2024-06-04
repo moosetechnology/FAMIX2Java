@@ -317,6 +317,7 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 	aAttribute isProtected ifTrue: [ self << 'protected ' ].
 	aAttribute isPublic ifTrue: [ self << 'public ' ].
 	aAttribute isClassSide ifTrue: [ self << 'static ' ].
+	aAttribute isTransient ifTrue: [ self << 'transient ' ].
 	"Declared Type"
 	aAttribute declaredType
 		ifNotNil: [ self printDeclaredType: aAttribute declaredType ]
