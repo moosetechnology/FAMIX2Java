@@ -919,6 +919,32 @@ FAMIX2JavaVisitorTest >> testVisitParametricClassWithTwoParameters [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitPrivateAttribute [
+
+	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
+	model := FamixJavaModel new.
+	attributeDeclaredType := FamixJavaClass new.
+	attributeDeclaredType name: 'AttributeClass'.
+	attribute := FamixJavaAttribute new.
+	attribute name: 'anAttribute'.
+	attribute isPrivate: true.
+	attribute declaredType: attributeDeclaredType. 
+	sourceAnchor := FamixJavaSourceTextAnchor new.
+	sourceAnchor source: ''.
+	attribute sourceAnchor: sourceAnchor.
+	attributeClass := FamixJavaClass new.
+	attributeClass addAttribute: attribute.
+	model addAll: { 
+			attribute.
+			attributeClass.
+			sourceAnchor }.
+	resultString := String streamContents: [ :stream | 
+		                visitor currentStream: stream.
+		                attribute accept: visitor ].
+	self assert: resultString equals: 'private AttributeClass anAttribute;'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitPrivateMethod [
 
 	| method methodClass model resultString |

@@ -313,10 +313,10 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 
 	"Printing modifiers"
 	self indent.
-	"modifiers := aAttribute cacheAt: #modifiers ifAbsent: [ aAttribute modifiers ].
-	modifiers isString
-		ifTrue: [ self <<< modifiers ]
-		ifFalse: [ modifiers do: [ :modifier | self <<< modifier ] separatedBy: [ self space ] ]."
+	aAttribute isPrivate ifTrue: [ self << 'private ' ].
+	aAttribute isProtected ifTrue: [ self << 'protected ' ].
+	aAttribute isPublic ifTrue: [ self << 'public ' ].
+	aAttribute isClassSide ifTrue: [ self << 'static ' ].
 	"Declared Type"
 	aAttribute declaredType
 		ifNotNil: [ self printDeclaredType: aAttribute declaredType ]
