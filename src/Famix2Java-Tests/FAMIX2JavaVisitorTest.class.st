@@ -345,6 +345,58 @@ FAMIX2JavaVisitorTest >> testImportAttributeDeclaredTypeIfPossible [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testImportParametricClass [
+
+	| method model resultString listConcrete methodClass javaPackage utilPackage listGeneric e obj listConcretisation listParameterConcretisation beanPackage |
+	model := FamixJavaModel new.
+	"Java Environnement"
+	javaPackage := model newPackageNamed: 'java'.
+	javaPackage isStub: true.
+	utilPackage := model newPackageNamed: 'util'.
+	utilPackage isStub: true.
+	listGeneric := model newParametricInterface.
+	listGeneric name: 'List'.
+	e := model newParameterTypeNamed: 'E'.
+	listGeneric addGenericParameter: e.
+	utilPackage addType: listGeneric.
+
+	"My environnement"
+	beanPackage := model newPackageNamed: 'bean'.
+	beanPackage isStub: true.
+	methodClass := model newClassNamed: 'MyClass'.
+	method := model newParametricMethod.
+	method name: 'testMethod'.
+	methodClass addMethod: method.
+	"declaredType of testMethod List<Object>"
+	listConcrete := model newParametricInterface.
+	listConcrete name: 'List'.
+	obj := model newTypeNamed: 'User'.
+	beanPackage addType: obj.
+	obj isStub: true.
+	listConcrete addConcreteParameter: obj.
+
+	"Link listConcrete to listGeneric"
+	listConcretisation := model newConcretization.
+	listConcretisation
+		concreteEntity: listConcrete;
+		genericEntity: listGeneric.
+
+	listParameterConcretisation := model newParameterConcretization.
+	listParameterConcretisation
+		concreteParameter: obj;
+		genericParameter: e.
+
+	method declaredType: listConcrete.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                visitor printImports: methodClass ].
+	self assert: resultString equals: 'import java.util.List;
+import bean.User;
+'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitAnnotationWithAttribute [
 
 	| model resultString annotationType anAnnotationInstance annotationTypeAttribute annotationInstanceAttribute |
