@@ -97,34 +97,37 @@ FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 
 	| declaredTypes |
-	declaredTypes := ((((aClass queryAllOutgoing collect: #target) flattened
-		                    asSet
+	declaredTypes := ((((aClass queryAllOutgoing collect: #target)
+		                    flattened asSet
 	                    ,
 		                    (((aClass allToScope: FamixTParameter) collect:
 			                      #declaredType)
 		                     ,
-		                     ((aClass allToScope: FamixTStructuralEntity) 
+		                     ((aClass allToScope: FamixTStructuralEntity)
 			                      collect: #declaredType)
 		                     , (aClass methods collect: #declaredType)
-		                     , (aClass methods collect: [ :m | 
-				                      m caughtExceptions ])
-		                     , (aClass methods collect: [ :m | 
-				                      m thrownExceptions ])
-		                     , (aClass methods collect: [ :m | 
-				                      m declaredExceptions ]))
-			                    flattened) asSet reject: #isNil) flatCollect: [ 
-		                  :element | 
-		                  element atAnyScope: { 
+		                     ,
+		                     (aClass methods collect: [ :m |
+			                      m caughtExceptions ])
+		                     ,
+		                     (aClass methods collect: [ :m |
+			                      m thrownExceptions ])
+		                     ,
+		                     (aClass methods collect: [ :m |
+			                      m declaredExceptions ])) flattened) asSet
+		                   reject: #isNil) flatCollect: [ :element |
+		                  element atAnyScope: {
 				                  FamixTClass.
+				                  FamixTImplementable.
 				                  FamixTEnum } ]) asSet.
-	(declaredTypes select: [ :dType | 
-		 dType isParametricEntity ]) do: [ 
-		:parameterizedType | 
-		declaredTypes addAll: parameterizedType allParametrizedClasses ].
-	declaredTypes := declaredTypes reject: [ :dType | 
-		                 (dType isParametricEntity) or: [ 
-			                 ((dType isKindOf: FamixJavaType) and: [ 
-				                  dType isAnonymousClass ]) or: [ 
+	(declaredTypes select: [ :dType | dType isParametricEntity ]) do: [
+		:parameterizedType |
+		declaredTypes addAll: parameterizedType concreteParameters ].
+	declaredTypes := declaredTypes reject: [ :dType |
+		                 (dType isParametricEntity and: [
+			                  dType isGenericEntity ]) or: [
+			                 ((dType isKindOf: FamixJavaType) and: [
+				                  dType isAnonymousClass ]) or: [
 				                 dType name = '?' ] ] ].
 	^ declaredTypes
 ]

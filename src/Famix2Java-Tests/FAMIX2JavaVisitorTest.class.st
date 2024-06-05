@@ -358,6 +358,7 @@ FAMIX2JavaVisitorTest >> testImportParametricClass [
 	listGeneric name: 'List'.
 	e := model newParameterTypeNamed: 'E'.
 	listGeneric addGenericParameter: e.
+	javaPackage addChildEntity: utilPackage.
 	utilPackage addType: listGeneric.
 
 	"My environnement"
@@ -370,6 +371,7 @@ FAMIX2JavaVisitorTest >> testImportParametricClass [
 	"declaredType of testMethod List<Object>"
 	listConcrete := model newParametricInterface.
 	listConcrete name: 'List'.
+	utilPackage addType: listConcrete.
 	obj := model newTypeNamed: 'User'.
 	beanPackage addType: obj.
 	obj isStub: true.
