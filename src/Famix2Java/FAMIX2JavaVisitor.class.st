@@ -262,6 +262,17 @@ FAMIX2JavaVisitor >> printMethodAnnotations: aMethod [
 ]
 
 { #category : #accessing }
+FAMIX2JavaVisitor >> printStatementBlockOf: aMethod [
+
+	self << ' {'.
+	self eol.
+	self << aMethod bodySourceText.
+	self
+		eol;
+		<<| '}'
+]
+
+{ #category : #accessing }
 FAMIX2JavaVisitor >> reset [
 	tabs := 0.
 	tabulationSize := 4
@@ -466,13 +477,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 	(aMethod parentType isInterface or: [
 		 aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self << ';' ]
-		ifFalse: [
-			self << ' {'.
-			self eol.
-			self << aMethod bodySourceText.
-			self
-				eol;
-				<<| '}' ]
+		ifFalse: [ self printStatementBlockOf: aMethod ]
 ]
 
 { #category : #visiting }
