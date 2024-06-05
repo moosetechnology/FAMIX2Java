@@ -1149,3 +1149,43 @@ FAMIX2JavaVisitorTest >> testVisitStaticMethod [
 
 }'
 ]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitTwoMethodsWithAnnotationInstances [
+
+	| method methodClass model resultString annotationType anAnnotationInstance method2 anAnnotationInstance2 |
+	model := FamixJavaModel new.
+
+	annotationType := model newAnnotationType.
+	annotationType name: 'override'.
+
+	method := model newMethodNamed: 'aMethod'.
+	anAnnotationInstance := model newAnnotationInstance.
+	anAnnotationInstance annotationType: annotationType.
+	method addAnnotationInstance: anAnnotationInstance.
+
+	method2 := model newMethodNamed: 'aMethod2'.
+	anAnnotationInstance2 := model newAnnotationInstance.
+	anAnnotationInstance2 annotationType: annotationType.
+	method2 addAnnotationInstance: anAnnotationInstance2.
+
+
+	methodClass := model newClassNamed: 'MyClass'.
+	methodClass addMethod: method.
+	methodClass addMethod: method2.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                method accept: visitor ].
+	self assert: resultString equals: '@override
+aMethod() {
+
+}'.
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                method2 accept: visitor ].
+	self assert: resultString equals: '@override
+aMethod2() {
+
+}'
+]
