@@ -925,6 +925,34 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithThrownException [
 ]
 
 { #category : #test }
+FAMIX2JavaVisitorTest >> testVisitMethodWithTwoParameters [
+
+	| method methodClass parameter model resultString parameterClass parameter2 |
+	model := FamixJavaModel new.
+
+	method := model newMethodNamed: 'aMethod'.
+	parameterClass := model newClassNamed: 'AClass'.
+	parameter := model newParameterNamed: 'aParameter'.
+
+	parameter declaredType: parameterClass.
+	method addParameter: parameter.
+
+	parameter2 := model newParameterNamed: 'aParameter2'.
+	parameter2 declaredType: parameterClass.
+	method addParameter: parameter2.
+
+	methodClass := model newClass.
+	methodClass addMethod: method.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                method accept: visitor ].
+	self assert: resultString equals: 'aMethod(AClass aParameter, AClass aParameter2) {
+
+}'
+]
+
+{ #category : #test }
 FAMIX2JavaVisitorTest >> testVisitParametricClass [
 
 	| model resultString aClass k |

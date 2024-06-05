@@ -422,6 +422,7 @@ FAMIX2JavaVisitor >> visitInterface: aClass [
 { #category : #accessing }
 FAMIX2JavaVisitor >> visitMethod: aMethod [
 
+	| parameters |
 	aMethod isStub ifTrue: [ ^ self ].
 	"Printing method annotations"
 	self printMethodAnnotations: aMethod.
@@ -432,37 +433,40 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 	aMethod isPublic ifTrue: [ self << 'public ' ].
 	aMethod isClassSide ifTrue: [ self << 'static ' ].
 	"Printing return type for method"
-	aMethod declaredType ifNotNil: [ :declaredType | 
+	aMethod declaredType ifNotNil: [ :declaredType |
 		self printDeclaredType: declaredType.
 		currentStream << String space ].
 	"Printing name + parameters of method"
-	(aMethod name = '<Initializer>' or: [ 
+	(aMethod name = '<Initializer>' or: [
 		 aMethod isAnInitializer and: [ aMethod isConstructor not ] ])
-		ifFalse: [ 
+		ifFalse: [
 			self
 				<< aMethod name;
 				<< '('.
-			(aMethod parameters sorted: [ :p :p2 | 
-				 p sourceAnchor startPos < p2 sourceAnchor startPos ])
-				do: [ :parameter | parameter accept: self clone  ]
+			parameters := aMethod parameters.
+			(parameters allSatisfy: [ :p | p hasSourceAnchor ]) ifTrue: [
+				parameters := parameters sorted: [ :p :p2 |
+					              p sourceAnchor startPos < p2 sourceAnchor startPos ] ].
+			parameters
+				do: [ :parameter | parameter accept: self ]
 				separatedBy: [ self << ', ' ].
 			self << ')' ]
 		ifTrue: [ self << 'static' ].
 	"print exception"
-	((aMethod withMethodsOverriding collect: [ :m | 
-		  m thrownExceptions , m declaredExceptions ])
-		 flattened asSet asOrderedCollection sorted: #name ascending) 
-		ifNotEmpty: [ :exceptions | 
-			self << ' throws '.
-			exceptions
-				do: [ :exception | self << exception name ]
-				separatedBy: [ self << ', ' ] ].
+	((aMethod withMethodsOverriding collect: [ :m |
+		  m thrownExceptions , m declaredExceptions ]) flattened asSet
+		 asOrderedCollection sorted: #name ascending) ifNotEmpty: [
+		:exceptions |
+		self << ' throws '.
+		exceptions
+			do: [ :exception | self << exception name ]
+			separatedBy: [ self << ', ' ] ].
 
 	"Printing body of method if class is not abstract or an interface"
 	(aMethod parentType isInterface or: [
 		 aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self << ';' ]
-		ifFalse: [ 
+		ifFalse: [
 			self << ' {'.
 			self eol.
 			self << aMethod bodySourceText.
