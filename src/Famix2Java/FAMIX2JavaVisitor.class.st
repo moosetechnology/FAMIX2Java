@@ -407,22 +407,13 @@ FAMIX2JavaVisitor >> visitInterface: aClass [
 	currentStream << aClass name.
 	"printing inheritance and implementation"
 	self printExtends: aClass.
-	currentStream << ' {'.
+	self << ' {'.
 	self eol.
-	"Printing Attributs"
 	self indentPlus.
-	aClass attributes do: [ :attribute |
-		attribute accept: self clone.
-		self eol ].
+	self printContentOfClass: aClass.
 	self eol.
-	"Printing Methods"
-	aClass methods do: [ :method |
-		self eol.
-		method accept: self clone.
-		self eol ].
-	"Closing Class"
-	self eol.
-	currentStream << '}'
+	self indentMinus.
+	self <<| '}'
 ]
 
 { #category : #accessing }
@@ -465,7 +456,7 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 				separatedBy: [ self << ', ' ] ].
 
 	"Printing body of method if class is not abstract or an interface"
-	((aMethod atScope: FamixTClass) anyOne isInterface or: [ 
+	(aMethod parentType isInterface or: [
 		 aMethod isAbstract isNotNil and: [ aMethod isAbstract ] ])
 		ifTrue: [ self << ';' ]
 		ifFalse: [ 

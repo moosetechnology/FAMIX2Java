@@ -571,7 +571,6 @@ FAMIX2JavaVisitorTest >> testVisitBasicInterface [
 		                aClass accept: visitor ].
 	self assert: resultString equals: 'public interface DemoInterface {
 
-
 }'
 ]
 
@@ -683,6 +682,33 @@ FAMIX2JavaVisitorTest >> testVisitClassWithMethodsAndAttributes [
     void aMethodTwo() {
 
     }
+
+}'
+]
+
+{ #category : #test }
+FAMIX2JavaVisitorTest >> testVisitInterfaceWithOneMethod [
+
+	| model resultString anInterface voidPrimitive interfaceMethod |
+	model := FamixJavaModel new.
+	voidPrimitive := model newPrimitiveTypeNamed: 'void'.
+	anInterface := model newInterface
+		          name: 'DemoInterface';
+		          yourself.
+
+	"Add a method to the class"
+	interfaceMethod := model newMethodNamed: 'insert'.
+	interfaceMethod isPublic: true.
+	interfaceMethod declaredType: voidPrimitive.
+	
+	anInterface addMethod: interfaceMethod.
+
+	resultString := String streamContents: [ :stream |
+		                visitor currentStream: stream.
+		                anInterface accept: visitor ].
+	self assert: resultString equals: 'public interface DemoInterface {
+
+    public void insert();
 
 }'
 ]
