@@ -1,6 +1,6 @@
-Extension { #name : #FamixTType }
+Extension { #name : 'FamixTType' }
 
-{ #category : #'*Famix2Java' }
+{ #category : '*Famix2Java' }
 FamixTType >> fullNamePrintOn: aStream [
 
 	| parent |
