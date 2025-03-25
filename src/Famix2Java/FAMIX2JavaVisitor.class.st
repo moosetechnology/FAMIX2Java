@@ -9,8 +9,8 @@ FAMIX2JavaVisitor new
 Class {
 	#name : #FAMIX2JavaVisitor,
 	#superclass : #Object,
-	#traits : 'FamixJavaTVisitor',
-	#classTraits : 'FamixJavaTVisitor classTrait',
+	#traits : 'FamixJavaVisitor',
+	#classTraits : 'FamixJavaVisitor classTrait',
 	#instVars : [
 		'currentStream',
 		'rootFolder',
