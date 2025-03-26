@@ -180,7 +180,6 @@ FAMIX2JavaVisitor >> printContentOfClass: aClass [
 
 { #category : #accessing }
 FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
-
 	aDeclaredType isParametricEntity ifFalse: [
 		currentStream << aDeclaredType name.
 		^ self ].
@@ -533,7 +532,7 @@ FAMIX2JavaVisitor >> visitFamixJavaParametricClass: aFamixJavaParametricClass [
 		self eol ].
 	"Printing Class declaration"
 	self <<| 'public class '.
-	self << aFamixJavaParametricClass name.
+	self << aFamixJavaParametricClass name. 
 	self << '<'.
 	aFamixJavaParametricClass genericParameters
 		do: [ :genericParam | self << genericParam name ]
@@ -551,6 +550,12 @@ FAMIX2JavaVisitor >> visitFamixJavaParametricClass: aFamixJavaParametricClass [
 	"Closing Class"
 	self eol.
 	self <<| '}'
+]
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaParametricMethod: aFamixJavaParametricMethod [
+
+	self visitFamixJavaMethod: aFamixJavaParametricMethod
 ]
 
 { #category : #generated }
