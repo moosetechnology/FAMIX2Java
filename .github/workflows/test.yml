@@ -5,22 +5,19 @@ env:
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the development branch
-on:
-  push:
-    branches: 
-      - development
-      - main
-      - v*
+on: [ push, pull_request ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        smalltalk: [ Moose64-11 ]
+        smalltalk: [ Moose64-12 ]
     name: ${{ matrix.smalltalk }}
     steps:
       - uses: actions/checkout@v2
+        with:
+         fetch-depth: '0'
       - uses: hpi-swa/setup-smalltalkCI@v1
         with:
           smalltalk-image: ${{ matrix.smalltalk }}
@@ -32,3 +29,14 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Coveralls
+        if: matrix.smalltalk == 'Moose64-12'
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: AutoReneraku
+        uses: badetitou/AutoReneraku@main
+        with:
+          pat: ${{ secrets.PAT }}
+        if: github.event_name == 'pull_request'

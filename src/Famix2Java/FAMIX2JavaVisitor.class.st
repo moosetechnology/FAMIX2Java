@@ -7,10 +7,10 @@ FAMIX2JavaVisitor new
 	export: model.
 "
 Class {
-	#name : 'FAMIX2JavaVisitor',
-	#superclass : 'Object',
-	#traits : 'FamixJavaVisitor',
-	#classTraits : 'FamixJavaVisitor classTrait',
+	#name : #FAMIX2JavaVisitor,
+	#superclass : #Object,
+	#traits : 'FamixJavaTVisitor',
+	#classTraits : 'FamixJavaTVisitor classTrait',
 	#instVars : [
 		'currentStream',
 		'rootFolder',
@@ -186,7 +186,6 @@ FAMIX2JavaVisitor >> printContentOfClass: aClass [
 
 { #category : 'accessing' }
 FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
-
 	aDeclaredType isParametricEntity ifFalse: [
 		currentStream << aDeclaredType name.
 		^ self ].
@@ -314,13 +313,18 @@ FAMIX2JavaVisitor >> space [
 	currentStream << String space
 ]
 
-{ #category : 'generated' }
-FAMIX2JavaVisitor >> visitAnnotationInstance: aAnnotationInstance [
+{ #category : #generated }
+FAMIX2JavaVisitor >> visitEntity: aEntity [
+	"do nothing if unknow"
+]
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaAnnotationInstance: aFamixJavaAnnotationInstance [
 
 	self
 		<<| '@';
-		<< aAnnotationInstance annotationType name.
-	aAnnotationInstance attributes ifNotEmpty: [ :attributes |
+		<< aFamixJavaAnnotationInstance annotationType name.
+	aFamixJavaAnnotationInstance attributes ifNotEmpty: [ :attributes |
 		self << '('.
 		attributes
 			do: [ :attribute | attribute accept: self ]
@@ -328,43 +332,46 @@ FAMIX2JavaVisitor >> visitAnnotationInstance: aAnnotationInstance [
 		self << ')' ]
 ]
 
-{ #category : 'accessing' }
-FAMIX2JavaVisitor >> visitAnnotationInstanceAttribute: aAnnotationInstanceAttribute [
-	self << aAnnotationInstanceAttribute name;
-	<< ' = ';
-	<< aAnnotationInstanceAttribute value
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaAnnotationInstanceAttribute: aFamixJavaAnnotationInstanceAttribute [
+
+	self
+		<< aFamixJavaAnnotationInstanceAttribute name;
+		<< ' = ';
+		<< aFamixJavaAnnotationInstanceAttribute value
 ]
 
-{ #category : 'accessing' }
-FAMIX2JavaVisitor >> visitAttribute: aAttribute [
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaAttribute: aFamixJavaAttribute [
 	"Visit an attribute to print its annotations and its field."
 
 	" Printing the annotations for the attribute"
 
 	| attributeSource attributeSourceFromName |
-	aAttribute annotationInstances do: [ :annotationInstance |
+	aFamixJavaAttribute annotationInstances do: [ :annotationInstance |
 		annotationInstance accept: self.
 		self eol ].
 
 	"Printing modifiers"
 	self indent.
-	aAttribute isPrivate ifTrue: [ self << 'private ' ].
-	aAttribute isProtected ifTrue: [ self << 'protected ' ].
-	aAttribute isPublic ifTrue: [ self << 'public ' ].
-	aAttribute isClassSide ifTrue: [ self << 'static ' ].
-	aAttribute isFinal ifTrue: [ self << 'final ' ].
-	aAttribute isTransient ifTrue: [ self << 'transient ' ].
+	aFamixJavaAttribute isPrivate ifTrue: [ self << 'private ' ].
+	aFamixJavaAttribute isProtected ifTrue: [ self << 'protected ' ].
+	aFamixJavaAttribute isPublic ifTrue: [ self << 'public ' ].
+	aFamixJavaAttribute isClassSide ifTrue: [ self << 'static ' ].
+	aFamixJavaAttribute isFinal ifTrue: [ self << 'final ' ].
+	aFamixJavaAttribute isTransient ifTrue: [ self << 'transient ' ].
 	"Declared Type"
-	aAttribute declaredType
-		ifNotNil: [ self printDeclaredType: aAttribute declaredType ]
+	aFamixJavaAttribute declaredType
+		ifNotNil: [
+		self printDeclaredType: aFamixJavaAttribute declaredType ]
 		ifNil: [ self << '/* erreur */ Object' ].
 	"Attribute name"
 	self
 		space;
-		<< aAttribute name.
+		<< aFamixJavaAttribute name.
 
 	"This is an hack to get the affectation is any (hack because some problems with annotations that are sometimes part of the sourceAnchor...)"
-	attributeSource := aAttribute sourceAnchor
+	attributeSource := aFamixJavaAttribute sourceAnchor
 		                   ifNil: [ '' ]
 		                   ifNotNil: [ :sourceAnchor |
 		                   sourceAnchor sourceText ].
@@ -372,7 +379,7 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 		attributeSourceFromName := attributeSource
 			                           copyFrom:
 			                           (attributeSource findString:
-				                            aAttribute name)
+				                            aFamixJavaAttribute name)
 			                           to: attributeSource size.
 		(attributeSourceFromName includesSubstring: '=') ifTrue: [
 			self
@@ -383,8 +390,8 @@ FAMIX2JavaVisitor >> visitAttribute: aAttribute [
 	self << ';'
 ]
 
-{ #category : 'accessing' }
-FAMIX2JavaVisitor >> visitClass: aClass [
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaClass: aClass [
 	"Printing class package and imports if the class is not an inner class"
 
 	"Printing class annotations""Printing Class declaration""printing inheritance and implementation""Printing Attributs""Printing Methods""Closing Class"
@@ -415,45 +422,41 @@ FAMIX2JavaVisitor >> visitClass: aClass [
 	self <<| '}'
 ]
 
-{ #category : 'generated' }
-FAMIX2JavaVisitor >> visitEntity: aEntity [
-	"do nothing if unknow"
-]
-
-{ #category : 'accessing' }
-FAMIX2JavaVisitor >> visitInterface: aClass [
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaInterface: aFamixJavaInterface [
 	"Printing class package and imports if the class is not an inner class"
 
-	(aClass typeContainer isNotNil and: [
-		 aClass typeContainer isKindOf: FamixJavaPackage ]) ifTrue: [
-		self << 'package '.
-		aClass typeContainer fullNamePrintOn: currentStream.
-		self
-			<< ';';
-			eol;
-			eol.
-		self printImports: aClass.
-		self eol ].
+	(aFamixJavaInterface typeContainer isNotNil and: [
+		 aFamixJavaInterface typeContainer isKindOf: FamixJavaPackage ])
+		ifTrue: [
+			self << 'package '.
+			aFamixJavaInterface typeContainer fullNamePrintOn: currentStream.
+			self
+				<< ';';
+				eol;
+				eol.
+			self printImports: aFamixJavaInterface.
+			self eol ].
 	"Printing class annotations"
-	aClass annotationInstances do: [ :annotationInstance |
+	aFamixJavaInterface annotationInstances do: [ :annotationInstance |
 		self clone visit: annotationInstance.
 		self eol ].
 	"Printing Class declaration"
 	currentStream << 'public interface '.
-	currentStream << aClass name.
+	currentStream << aFamixJavaInterface name.
 	"printing inheritance and implementation"
-	self printExtends: aClass.
+	self printExtends: aFamixJavaInterface.
 	self << ' {'.
 	self eol.
 	self indentPlus.
-	self printContentOfClass: aClass.
+	self printContentOfClass: aFamixJavaInterface.
 	self eol.
 	self indentMinus.
 	self <<| '}'
 ]
 
-{ #category : 'accessing' }
-FAMIX2JavaVisitor >> visitMethod: aMethod [
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaMethod: aMethod [
 
 	| parameters |
 	aMethod isStub ifTrue: [ ^ self ].
@@ -502,9 +505,10 @@ FAMIX2JavaVisitor >> visitMethod: aMethod [
 		ifFalse: [ self printStatementBlockOf: aMethod ]
 ]
 
-{ #category : 'visiting' }
-FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
- 	
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaPackage: aFamixJavaPackage [
+
 	(aFamixJavaPackage types select: [ :t | slicedClasses includesKey: t ]) do: [ :type |
 		| file folder |
 		folder := self ensureCreateDirectoryForPackage: aFamixJavaPackage.
@@ -517,14 +521,16 @@ FAMIX2JavaVisitor >> visitPackage: aFamixJavaPackage [
 	aFamixJavaPackage childEntities do: [ :child | child accept: self ]
 ]
 
-{ #category : 'generated' }
-FAMIX2JavaVisitor >> visitParameter: aParameter [
-	aParameter declaredType isParametricEntity
-		ifTrue: [ self visitParameterizableType: aParameter declaredType ]
-		ifFalse: [ self << aParameter declaredType name ].
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaParameter: aFamixJavaParameter [
+
+	aFamixJavaParameter declaredType isParametricEntity
+		ifTrue: [
+		self visitParameterizableType: aFamixJavaParameter declaredType ]
+		ifFalse: [ self << aFamixJavaParameter declaredType name ].
 	self
 		space;
-		<< aParameter name
+		<< aFamixJavaParameter name
 ]
 
 { #category : 'generated' }
@@ -540,8 +546,8 @@ FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
 	self << '>'
 ]
 
-{ #category : 'visiting' }
-FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaParametricClass: aFamixJavaParametricClass [
 	"Printing class package and imports if the class is not an inner class"
 
 	(aFamixJavaParametricClass typeContainer isKindOf: FamixJavaPackage)
@@ -562,7 +568,7 @@ FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
 		self eol ].
 	"Printing Class declaration"
 	self <<| 'public class '.
-	self << aFamixJavaParametricClass name.
+	self << aFamixJavaParametricClass name. 
 	self << '<'.
 	aFamixJavaParametricClass genericParameters
 		do: [ :genericParam | self << genericParam name ]
@@ -580,4 +586,23 @@ FAMIX2JavaVisitor >> visitParametricClass: aFamixJavaParametricClass [
 	"Closing Class"
 	self eol.
 	self <<| '}'
+]
+
+{ #category : #visiting }
+FAMIX2JavaVisitor >> visitFamixJavaParametricMethod: aFamixJavaParametricMethod [
+
+	self visitFamixJavaMethod: aFamixJavaParametricMethod
+]
+
+{ #category : #generated }
+FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
+	self << aParameterizableType name.
+	self << '<'.
+	aParameterizableType concreteParameters
+		do: [ :concreteParameter | 
+			concreteParameter isParameterType
+				ifTrue: [ self visitParameterizableType: concreteParameter ]
+				ifFalse: [ self << concreteParameter name ] ]
+		separatedBy: [ self << ',' ].
+	self << '>'
 ]
