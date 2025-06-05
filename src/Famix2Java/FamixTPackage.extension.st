@@ -1,6 +1,6 @@
-Extension { #name : 'FamixTPackage' }
+Extension { #name : #FamixTPackage }
 
-{ #category : '*Famix2Java' }
+{ #category : #'*Famix2Java' }
 FamixTPackage >> fullNamePrintOn: aStream [
 	self belongsTo
 		ifNotNil: [ :parent | 

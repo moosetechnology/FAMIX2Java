@@ -1,6 +1,6 @@
-Extension { #name : 'FamixTMethod' }
+Extension { #name : #FamixTMethod }
 
-{ #category : '*Famix2Java' }
+{ #category : #'*Famix2Java' }
 FamixTMethod >> bodySourceText [
 	^ self sourceText
 		ifNotEmpty: [ :sourceText | 
@@ -13,7 +13,7 @@ FamixTMethod >> bodySourceText [
 		ifEmpty: [ '' ]
 ]
 
-{ #category : '*Famix2Java' }
+{ #category : #'*Famix2Java' }
 FamixTMethod >> isAnInitializer [
 
 	^ ((self mooseModel respondsTo: #isSmalltalk) and: [ 
@@ -24,7 +24,7 @@ FamixTMethod >> isAnInitializer [
 		  ifFalse: [ self name = '<Initializer>' or: [ self isConstructor ] ]
 ]
 
-{ #category : '*Famix2Java' }
+{ #category : #'*Famix2Java' }
 FamixTMethod >> withMethodsOverriding [
 
 	^ (self belongsTo subclassHierarchy

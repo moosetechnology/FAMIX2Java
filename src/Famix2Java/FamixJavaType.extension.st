@@ -1,6 +1,6 @@
-Extension { #name : 'FamixJavaType' }
+Extension { #name : #FamixJavaType }
 
-{ #category : '*Famix2Java' }
+{ #category : #'*Famix2Java' }
 FamixJavaType >> allParametrizedClasses [
 	^ {  }
 ]

@@ -19,48 +19,47 @@ Class {
 		'endOfLine',
 		'slicedClasses'
 	],
-	#category : 'Famix2Java',
-	#package : 'Famix2Java'
+	#category : #Famix2Java
 }
 
-{ #category : 'private-exporting' }
+{ #category : #'private-exporting' }
 FAMIX2JavaVisitor >> << aString [
 
 	currentStream << aString
 ]
 
-{ #category : 'private-exporting' }
+{ #category : #'private-exporting' }
 FAMIX2JavaVisitor >> <<| aString [
 
 	self indent.
 	self << aString
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> currentStream [
 
 	^ currentStream
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> currentStream: aStream [
 
 	currentStream := aStream
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> endOfLine [
 
 	^ endOfLine
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> endOfLine: anObject [
 
 	endOfLine := anObject
 ]
 
-{ #category : 'visiting' }
+{ #category : #visiting }
 FAMIX2JavaVisitor >> ensureCreateDirectoryForPackage: aFamixJavaPackage [
 
 	| folder |
@@ -73,20 +72,20 @@ FAMIX2JavaVisitor >> ensureCreateDirectoryForPackage: aFamixJavaPackage [
 	^ folder ensureCreateDirectory
 ]
 
-{ #category : 'private-exporting' }
+{ #category : #'private-exporting' }
 FAMIX2JavaVisitor >> eol [
 	"print the end of line that can be configured"
 	self << self endOfLine
 ]
 
-{ #category : 'public-exporting' }
+{ #category : #'public-exporting' }
 FAMIX2JavaVisitor >> export: aFAMIXCompatibilityModel [
 
 	(slicedClasses keys collectAsSet: [ :c | c typeContainer ]) do: [
 		:package | package accept: self clone ]
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 	| annotationInts |
 	annotationInts := OrderedCollection new.
@@ -96,7 +95,7 @@ FAMIX2JavaVisitor >> extractAnnotationTypesFor: aClass [
 	^ annotationInts collect: [ :ann | ann annotationType ] as: Set
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 
 	| declaredTypes |
@@ -135,23 +134,23 @@ FAMIX2JavaVisitor >> extractDeclaredTypesFor: aClass [
 	^ declaredTypes
 ]
 
-{ #category : 'private-exporting' }
+{ #category : #'private-exporting' }
 FAMIX2JavaVisitor >> indent [
 	tabs * tabulationSize timesRepeat: [ currentStream << String space ].
 	
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> indentMinus [
 	tabs := tabs - 1
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> indentPlus [
 	tabs := tabs + 1
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 FAMIX2JavaVisitor >> initialize [
 
 	super initialize.
@@ -159,7 +158,7 @@ FAMIX2JavaVisitor >> initialize [
 	self reset
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> printContentOfClass: aClass [
 
 	(aClass types select: [ :t | slicedClasses includesKey: t ])
@@ -184,7 +183,7 @@ FAMIX2JavaVisitor >> printContentOfClass: aClass [
 			self eol ] ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
 	aDeclaredType isParametricEntity ifFalse: [
 		currentStream << aDeclaredType name.
@@ -198,19 +197,17 @@ FAMIX2JavaVisitor >> printDeclaredType: aDeclaredType [
 	currentStream << '>'
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 FAMIX2JavaVisitor >> printExtends: aClass [
 	"Print the extension of the class"
 
 	(aClass superclass isNil and: [
-	(slicedClasses includesKey: aClass superclass) not ])
-		ifFalse: [ "ignore Object"
-			self
-				<< ' extends ';
-				<< aClass superclass name ]
+		 (slicedClasses includesKey: aClass superclass) not ]) ifFalse: [ "ignore Object"
+		self << ' extends '.
+		self printDeclaredType: aClass superclass ]
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 FAMIX2JavaVisitor >> printImplements: aClass [
 	"Prints the implementation of interfaces in a class."
 
@@ -224,7 +221,7 @@ FAMIX2JavaVisitor >> printImplements: aClass [
 			separatedBy: [ self << ', ' ] ]
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 FAMIX2JavaVisitor >> printImports: aClass [
 
 	| declaredTypes annotationTypes |
@@ -237,7 +234,7 @@ FAMIX2JavaVisitor >> printImports: aClass [
 	self printImportsAnnotationTypes: annotationTypes
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 FAMIX2JavaVisitor >> printImportsAnnotationTypes: annotationTypes [
 	(annotationTypes sorted: #mooseName ascending)
 		do: [ :annotType | 
@@ -250,7 +247,7 @@ FAMIX2JavaVisitor >> printImportsAnnotationTypes: annotationTypes [
 				eol ]
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
 	(declaredTypes sorted: #mooseName ascending)
 		do: [ :class | 
@@ -261,7 +258,7 @@ FAMIX2JavaVisitor >> printImportsDeclaredTypes: declaredTypes [
 				eol ]
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 FAMIX2JavaVisitor >> printMethodAnnotations: aMethod [
 
 	aMethod annotationInstances do: [ :annotationInstance | 
@@ -269,7 +266,7 @@ FAMIX2JavaVisitor >> printMethodAnnotations: aMethod [
 		self eol ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> printStatementBlockOf: aMethod [
 
 	self << ' {'.
@@ -280,35 +277,35 @@ FAMIX2JavaVisitor >> printStatementBlockOf: aMethod [
 		<<| '}'
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> reset [
 	tabs := 0.
 	tabulationSize := 4
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> rootFolder [
 	^ rootFolder
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> rootFolder: anObject [
 	rootFolder := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> slicedClasses [
 
 	^ slicedClasses
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 FAMIX2JavaVisitor >> slicedClasses: anObject [
 
 	slicedClasses := anObject
 ]
 
-{ #category : 'private-exporting' }
+{ #category : #'private-exporting' }
 FAMIX2JavaVisitor >> space [
 	currentStream << String space
 ]
@@ -321,6 +318,7 @@ FAMIX2JavaVisitor >> visitEntity: aEntity [
 { #category : #visiting }
 FAMIX2JavaVisitor >> visitFamixJavaAnnotationInstance: aFamixJavaAnnotationInstance [
 
+	
 	self
 		<<| '@';
 		<< aFamixJavaAnnotationInstance annotationType name.
@@ -505,45 +503,32 @@ FAMIX2JavaVisitor >> visitFamixJavaMethod: aMethod [
 		ifFalse: [ self printStatementBlockOf: aMethod ]
 ]
 
-
 { #category : #visiting }
 FAMIX2JavaVisitor >> visitFamixJavaPackage: aFamixJavaPackage [
 
-	(aFamixJavaPackage types select: [ :t | slicedClasses includesKey: t ]) do: [ :type |
-		| file folder |
-		folder := self ensureCreateDirectoryForPackage: aFamixJavaPackage.
+	(aFamixJavaPackage types select: [ :t | slicedClasses includesKey: t ])
+		do: [ :type |
+			| file folder |
+			folder := self ensureCreateDirectoryForPackage: aFamixJavaPackage.
 
-		file := folder / (type name , '.java').
-		file deleteIfAbsent: [  ].
-		file writeStreamDo: [ :stream |
-			currentStream := stream.
-			type accept: self ] ].
+			file := folder / (type name , '.java').
+			file exists ifFalse: [
+				file writeStreamDo: [ :stream |
+					currentStream := stream.
+					type accept: self ] ] ].
 	aFamixJavaPackage childEntities do: [ :child | child accept: self ]
 ]
 
 { #category : #visiting }
 FAMIX2JavaVisitor >> visitFamixJavaParameter: aFamixJavaParameter [
 
-	aFamixJavaParameter declaredType isParametricEntity
+	((aFamixJavaParameter declaredType) notNil and:  [aFamixJavaParameter declaredType isParametricEntity ])
 		ifTrue: [
 		self visitParameterizableType: aFamixJavaParameter declaredType ]
 		ifFalse: [ self << aFamixJavaParameter declaredType name ].
 	self
 		space;
 		<< aFamixJavaParameter name
-]
-
-{ #category : 'generated' }
-FAMIX2JavaVisitor >> visitParameterizableType: aParameterizableType [
-	self << aParameterizableType name.
-	self << '<'.
-	aParameterizableType concreteParameters
-		do: [ :concreteParameter | 
-			concreteParameter isParameterType
-				ifTrue: [ self visitParameterizableType: concreteParameter ]
-				ifFalse: [ self << concreteParameter name ] ]
-		separatedBy: [ self << ',' ].
-	self << '>'
 ]
 
 { #category : #visiting }
