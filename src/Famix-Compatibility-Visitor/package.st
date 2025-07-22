@@ -1,1 +1,1 @@
-Package { #name : #'Famix-Compatibility-Visitor' }
+Package { #name : 'Famix-Compatibility-Visitor' }
