@@ -1,6 +1,6 @@
-Extension { #name : #MooseQueryMockSpecializedInvocation }
+Extension { #name : 'MooseQueryMockSpecializedInvocation' }
 
-{ #category : #'*Famix-Compatibility-Visitor-generated' }
+{ #category : '*Famix-Compatibility-Visitor-generated' }
 MooseQueryMockSpecializedInvocation >> accept: aFAMIXVisitor [
 	^ aFAMIXVisitor visitMooseQueryMockSpecializedInvocation: self
 ]

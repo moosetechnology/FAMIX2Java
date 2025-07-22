@@ -2,22 +2,23 @@
 A FAMIX2JavaVisitorTest is a test class for testing the behavior of FAMIX2JavaVisitor
 "
 Class {
-	#name : #FAMIX2JavaVisitorTest,
-	#superclass : #TestCase,
+	#name : 'FAMIX2JavaVisitorTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'visitor'
 	],
-	#category : #'Famix2Java-Tests'
+	#category : 'Famix2Java-Tests',
+	#package : 'Famix2Java-Tests'
 }
 
-{ #category : #running }
+{ #category : 'running' }
 FAMIX2JavaVisitorTest >> setUp [ 
 	super setUp.
 	visitor := FAMIX2JavaVisitor new.
 	visitor endOfLine: String cr
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testDoNotExportPackageStub [
 
 	| model aClass orgPackage memory comStubPackage aStubClass |
@@ -62,7 +63,7 @@ FAMIX2JavaVisitorTest >> testDoNotExportPackageStub [
 			isFile
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testExportAnnotationImport [
 
 	| model resultString aClass annotationType anAnnotationInstance package |
@@ -84,7 +85,7 @@ FAMIX2JavaVisitorTest >> testExportAnnotationImport [
 '
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testExportInnerParametricClass [
 
 	| model resultString aClass k orgPackage innerParametricClass |
@@ -117,7 +118,7 @@ public class DemoClass {
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testExportMultiLevelPackagesMultiHierarachyWithClassAtMultipleLevel [
 
 	| model orgClass aCompanyClass orgPackage companyPackage memory frPackage otherCompanyPackage frClass otherCompanyClass |
@@ -181,7 +182,7 @@ FAMIX2JavaVisitorTest >> testExportMultiLevelPackagesMultiHierarachyWithClassAtM
 		 / 'OtherCompanyClass.java') asFileReference isFile
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testExportMultiLevelPackagesWithClassAtMultipleLevel [
 
 	| model orgClass aCompanyClass orgPackage companyPackage memory |
@@ -224,7 +225,7 @@ FAMIX2JavaVisitorTest >> testExportMultiLevelPackagesWithClassAtMultipleLevel [
 			asFileReference isFile
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testExportOneClassInAnotherClass [
 
 	| model aClass orgPackage innerClass resultString |
@@ -250,7 +251,7 @@ public class DemoClass {
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testExportOnePackageWithMultipleClasses [
 
 	| model aClass orgPackage memory aClass2 |
@@ -287,7 +288,7 @@ FAMIX2JavaVisitorTest >> testExportOnePackageWithMultipleClasses [
 			isFile
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testExportPackage [
 
 	| model aClass orgPackage memory |
@@ -319,7 +320,7 @@ FAMIX2JavaVisitorTest >> testExportPackage [
 			isFile
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testImportAttributeDeclaredTypeIfPossible [
 
 	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
@@ -344,7 +345,7 @@ FAMIX2JavaVisitorTest >> testImportAttributeDeclaredTypeIfPossible [
 	self assert: resultString equals: 'AttributeClass anAttribute;'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testImportParametricClass [
 
 	| method model resultString listConcrete methodClass javaPackage utilPackage listGeneric e obj listConcretisation listParameterConcretisation beanPackage |
@@ -398,7 +399,7 @@ import bean.User;
 '
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitAnnotationWithAttribute [
 
 	| model resultString annotationType anAnnotationInstance annotationTypeAttribute annotationInstanceAttribute |
@@ -427,7 +428,7 @@ FAMIX2JavaVisitorTest >> testVisitAnnotationWithAttribute [
 	self assert: resultString equals: '@AnAnnotation(annotationAttributeName = true)'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitAnnotationWithoutAttribute [
 
 	| model resultString annotationType anAnnotationInstance |
@@ -444,7 +445,7 @@ FAMIX2JavaVisitorTest >> testVisitAnnotationWithoutAttribute [
 	self assert: resultString equals: '@AnAnnotation'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitAttribute [
 
 	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
@@ -469,7 +470,7 @@ FAMIX2JavaVisitorTest >> testVisitAttribute [
 	self assert: resultString equals: 'AttributeClass anAttribute;'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitBasicClass [
 
 	| model resultString aClass |
@@ -487,7 +488,7 @@ FAMIX2JavaVisitorTest >> testVisitBasicClass [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasOneInterface [
 
 	| model resultString aClass implementation anInterface |
@@ -517,7 +518,7 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasOneInterface [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasSuperClass [
 
 	| model resultString aClass inheritance aSuperClass |
@@ -547,7 +548,7 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasSuperClass [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasTwoInterfaces [
 
 	| model resultString aClass implementation anInterface anInterface2 implementation2 |
@@ -588,7 +589,7 @@ FAMIX2JavaVisitorTest >> testVisitBasicClassThatHasTwoInterfaces [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitBasicClassWithAnnotation [
 
 	| model resultString aClass annotationType anAnnotationInstance |
@@ -610,7 +611,7 @@ public class DemoClass {
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitBasicInterface [
 
 	| model resultString aClass |
@@ -628,7 +629,7 @@ FAMIX2JavaVisitorTest >> testVisitBasicInterface [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitClassWithDependencyAttribute [
 
 	| attribute attributeClass attributeDeclaredType packageFr sourceAnchor model resultString |
@@ -659,7 +660,7 @@ FAMIX2JavaVisitorTest >> testVisitClassWithDependencyAttribute [
 '
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitClassWithDependencyAttributeAlsoStub [
 
 	| attributeClass attributeDeclaredType model resultString packageFr packageOrg attribute sourceAnchor |
@@ -699,7 +700,7 @@ FAMIX2JavaVisitorTest >> testVisitClassWithDependencyAttributeAlsoStub [
 '
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitClassWithMethodsAndAttributes [
 
 	| model resultString aClass primitiveVoid method method2 attributeDeclaredType attribute |
@@ -740,7 +741,7 @@ FAMIX2JavaVisitorTest >> testVisitClassWithMethodsAndAttributes [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitInterfaceWithOneMethod [
 
 	| model resultString anInterface voidPrimitive interfaceMethod |
@@ -767,7 +768,7 @@ FAMIX2JavaVisitorTest >> testVisitInterfaceWithOneMethod [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitMethodDeclaredTypePrimitiveVoid [
 
 	| method methodClass primitiveVoid model resultString |
@@ -788,7 +789,7 @@ FAMIX2JavaVisitorTest >> testVisitMethodDeclaredTypePrimitiveVoid [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitMethodWithAnnotation [
 
 	| method methodClass model resultString annotationType anAnnotationInstance |
@@ -818,7 +819,7 @@ aMethod() {
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 
 	| method methodClass exception model resultString |
@@ -844,7 +845,7 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithDeclaredException [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitMethodWithParameter [
 
 	| method methodClass parameter model resultString parameterClass |
@@ -868,7 +869,7 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithParameter [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitMethodWithParametricDeclaredType [
 
 	| method model resultString parameter list methodClass |
@@ -898,7 +899,7 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithParametricDeclaredType [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitMethodWithThrownException [
 
 	| method methodClass exception model resultString |
@@ -924,7 +925,7 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithThrownException [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitMethodWithTwoParameters [
 
 	| method methodClass parameter model resultString parameterClass parameter2 |
@@ -952,7 +953,7 @@ FAMIX2JavaVisitorTest >> testVisitMethodWithTwoParameters [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitParametricClass [
 
 	| model resultString aClass k |
@@ -973,7 +974,7 @@ FAMIX2JavaVisitorTest >> testVisitParametricClass [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitParametricClassWithMultipleParameters [
 
 	| model resultString aClass k v z |
@@ -1001,7 +1002,7 @@ FAMIX2JavaVisitorTest >> testVisitParametricClassWithMultipleParameters [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitParametricClassWithTwoParameters [
 
 	| model resultString aClass k v |
@@ -1026,7 +1027,7 @@ FAMIX2JavaVisitorTest >> testVisitParametricClassWithTwoParameters [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitPrivateAttribute [
 
 	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
@@ -1052,7 +1053,7 @@ FAMIX2JavaVisitorTest >> testVisitPrivateAttribute [
 	self assert: resultString equals: 'private AttributeClass anAttribute;'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitPrivateMethod [
 
 	| method methodClass model resultString |
@@ -1075,7 +1076,7 @@ FAMIX2JavaVisitorTest >> testVisitPrivateMethod [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitPrivateStaticFinalAttribute [
 
 	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
@@ -1105,7 +1106,7 @@ FAMIX2JavaVisitorTest >> testVisitPrivateStaticFinalAttribute [
 		equals: 'private static final AttributeClass anAttribute;'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitPrivateTransientAttribute [
 
 	| attribute attributeClass attributeDeclaredType sourceAnchor model resultString |
@@ -1132,7 +1133,7 @@ FAMIX2JavaVisitorTest >> testVisitPrivateTransientAttribute [
 	self assert: resultString equals: 'private transient AttributeClass anAttribute;'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitPublicMethod [
 
 	| method methodClass model resultString |
@@ -1155,7 +1156,7 @@ FAMIX2JavaVisitorTest >> testVisitPublicMethod [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitStaticMethod [
 
 	| method methodClass model resultString |
@@ -1178,7 +1179,7 @@ FAMIX2JavaVisitorTest >> testVisitStaticMethod [
 }'
 ]
 
-{ #category : #test }
+{ #category : 'test' }
 FAMIX2JavaVisitorTest >> testVisitTwoMethodsWithAnnotationInstances [
 
 	| method methodClass model resultString annotationType anAnnotationInstance method2 anAnnotationInstance2 |

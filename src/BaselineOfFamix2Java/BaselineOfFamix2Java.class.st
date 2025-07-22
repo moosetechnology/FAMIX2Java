@@ -1,10 +1,11 @@
 Class {
-	#name : #BaselineOfFamix2Java,
-	#superclass : #BaselineOf,
-	#category : #BaselineOfFamix2Java
+	#name : 'BaselineOfFamix2Java',
+	#superclass : 'BaselineOf',
+	#category : 'BaselineOfFamix2Java',
+	#package : 'BaselineOfFamix2Java'
 }
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamix2Java >> baseline: spec [
 	<baseline>
 	spec
@@ -15,15 +16,15 @@ BaselineOfFamix2Java >> baseline: spec [
 			self defineGroups: spec ]
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamix2Java >> defineDependencies: spec [
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamix2Java >> defineGroups: spec [
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfFamix2Java >> definePackages: spec [
 
 	spec
